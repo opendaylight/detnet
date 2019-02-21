@@ -1,0 +1,234 @@
+module detnet-topology {
+	namespace "urn:detnet:topology";
+	prefix "detnet-topology";
+	
+	import ietf-inet-types {
+		prefix "inet";
+    }
+	import detnet-common {
+		prefix "detnet-common";
+	}
+	
+	organization "zte";	
+	revision 2018-08-23 {
+		description "Initial revision.";
+	}
+  
+  container detnet-network-topology {
+	list detnet-topology {
+		key "topology-id";
+		ordered-by user;
+		leaf topology-id {
+			type string;
+		}   
+		
+		list detnet-node {
+			key "node-id";
+			ordered-by user;
+			uses detnet-node;
+		}
+						
+		list detnet-link {
+			key "link-id";
+			ordered-by user;
+			uses detnet-link;
+		}		
+		
+		list domains {
+			key "domain-id";
+			leaf domain-id {
+				type uint16;
+			}
+			list segments {
+				key "segment-id";
+				leaf segment-id {
+					type uint16;
+				}
+			}
+		}				
+	}
+  }
+
+	grouping traffic-class-group {
+		leaf tc-index {
+			type uint8;
+		}
+		leaf minimum-queue-delay {
+			default 0;
+			type uint32;
+			description "The minimum bridge delay per-port per-tc.";
+		}
+		
+		leaf maximum-queue-delay {
+			type uint32;
+			description "The maximum bridge delay per-port per-tc.";
+		}
+	}
+    
+	grouping ltp {
+		description "Link terminate point.";
+		leaf tp-id {
+			type string;
+		}
+		leaf if-name {
+		  type string;
+		}
+		leaf tp-ip-prefix {
+			type inet:ip-address;
+		}
+		leaf tp-index {
+			type uint32;
+		}		
+		leaf node-preof-capability {
+			default NONE;
+			type detnet-common:preof-type;
+		}
+		leaf detnet-encapsulation-type {
+			type detnet-common:detnet-encapsulation-type;
+		}
+		list traffic-classes {
+			key "tc-index";
+			ordered-by user;
+			uses traffic-class-group;
+		}
+	}
+	
+	typedef detnet-node-type {
+		type enumeration {
+			enum edge {
+				value 0;
+				description 
+					"Detnet edge node.";
+			}
+			enum relay {
+				value 1;
+				description
+					"Detnet relay node.";
+			}
+			enum transit {
+				value 2;
+				description
+					"Detnet transit node.";
+			}
+			enum bridge {
+				value 3;
+				description
+					"TSN bridge.";
+			}
+			enum l2-end-station {
+				value 4;
+				description
+					"Level 2 end station.";					
+			}
+			enum l3-end-station {
+				value 5;
+				description
+					"Level 3 end station.";
+			}
+		}
+	}	
+	
+	grouping detnet-node {
+		leaf node-id {
+			type string;
+		}
+		leaf name {
+			type string;
+		}
+
+		leaf ipv4-prefix {
+            type inet:ipv4-prefix;
+		}
+
+		leaf ipv6-prefix {
+		    type inet:ipv6-prefix;
+		}
+
+		leaf is-relay-node {
+		    type boolean;
+		    default false;
+		}
+
+		list segments {
+			leaf segment-id {
+				type uint16;
+			}
+			description "MPLS/IPv4/IPv6/TSN segment.";
+		}
+		leaf process-delay {
+			default 0;
+			type uint32;
+			description "In microseconds(us).";
+		}
+		leaf latitude {
+			default 0;
+			type uint64;
+		}
+		leaf longitude {
+			default 0;
+			type uint64;
+		}
+		list ltps {
+		    key "tp-id";
+		    ordered-by user;
+		    uses ltp;
+		}		
+	}
+	
+	grouping detnet-link {
+		leaf link-id {
+			type string;
+		}
+		container link-source {
+		  leaf source-node {
+			  type string;
+		  }
+		  leaf source-tp {
+			  type string;
+		  }
+		}
+		container link-dest {
+		  leaf dest-node {
+			  type string;
+		  }
+		  leaf dest-tp {
+			  type string;
+		  }
+		}
+		
+		leaf link-delay {
+			default 0;
+			type uint32;
+		}
+		leaf link-bandwidth {
+		    type uint32;
+		    description "Total output port bandwidth, in K bits per second.";
+		}
+		leaf loss {
+			default 0;
+			type uint32;
+		}
+		leaf metric {
+			type uint32;
+		}
+
+		leaf maximum-reservable-bandwidth {
+            type uint32;
+            mandatory true;
+            description "Maximum bandwidth for DETNET flows, in K bits per second.";
+        }
+
+        leaf reserved-detnet-bandwidth {
+            type uint32;
+            default 0;
+            mandatory true;
+            description "K bits per second.";
+        }
+
+        leaf available-detnet-bandwidth {
+            type uint32;
+            mandatory true;
+            description "K bits per second.";
+        }
+	}	
+}
