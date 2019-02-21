@@ -1,0 +1,392 @@
+module detnet-1588v2 {
+	namespace "urn:detnet:1588v2";
+	prefix "detnet-1588v2";
+	
+	organization "zte";	
+	revision 2018-08-28 {
+		description "Initial revision.";
+	}
+
+	typedef time-interval-type {
+       type int64;
+       description
+         "Derived data type for time interval,
+         represented in units of nanoseconds and
+         multipled by 2^16";
+       reference
+         "IEEE Std 1588-2008: 5.3.2";
+     }
+	
+	typedef delay-mechanism-enumeration {
+		type enumeration {
+			enum E2E {
+			value 1;
+			description
+				"The port uses the delay request-response
+				mechanism.";
+			}
+			enum P2P {
+				value 2;
+				description
+					"The port uses the peer delay mechanism.";
+			}
+			enum DISABLED {
+				value 254;
+				description
+					"The port does not implement any delay
+					mechanism.";
+			}
+       }
+		description
+			"The propagation delay measuring option used by the
+			port. Values for this enumeration are specified
+			by the IEEE 1588 standard exclusively.";
+		reference
+			"IEEE Std 1588-2008: 8.2.5.4.4";
+	}
+	
+	typedef clock-identity-type {
+		type binary {
+			length "8";
+		}
+		description
+			"Derived data type to identify a clock, 8 byte length.";
+		reference
+			"IEEE Std 1588-2008: 5.3.4";
+    }
+	
+	grouping clock-quality-grouping {
+		description
+			"Derived data type for quality of a clock, which contains
+			clockClass, clockAccuracy and offsetScaledLogVariance.";
+		reference
+			"IEEE Std 1588-2008: 5.3.7";
+
+		leaf clock-class {
+			type uint8;
+			default 248;
+			description
+				"The clockClass denotes the traceability of the time
+				or frequency distributed by the clock.";
+		}
+
+		leaf clock-accuracy {
+			type uint8;
+			description
+				"The clockAccuracy indicates the expected accuracy
+				of the clock.";
+		}
+
+		leaf offset-scaled-log-variance {
+			type uint16;
+			description
+				"The offsetScaledLogVariance provides an
+				estimate of the variations of the clock
+				from a linear timescale when it is not synchronized
+				to another clock using the protocol.";
+		}
+    }
+	 
+	grouping port-identity-grouping {
+		description
+			"Derived data type to identify a port, which contains
+			two members: clockIdentity and portNumber.";
+		reference
+			"IEEE Std 1588-2008: 5.3.5";
+
+		leaf clock-identity {
+			type clock-identity-type;
+			description
+				"Identity of the clock";
+		}
+
+		leaf port-number {
+			type uint16;
+			description
+				"Port number";
+		}
+    }
+	
+	grouping default-ds-entry {
+		description
+			"Collection of members of the default data set.";
+
+		leaf two-step-flag {
+			type boolean;
+			description
+				"When set, the clock is a two-step clock; otherwise,
+				the clock is a one-step clock.";
+		}
+
+		leaf clock-identity {
+			type clock-identity-type;
+			description
+				"The clockIdentity of the local clock";
+		}
+
+		leaf number-ports {
+			type uint16;
+			description
+				"The number of logical PTP ports on the device.";
+		}
+
+		container clock-quality {
+			description
+				"The clockQuality of the local clock.";
+
+			uses clock-quality-grouping;
+		}
+
+		leaf priority1 {
+			type uint8;
+			description
+				"The priority1 attribute of the local clock.";
+		}
+
+		leaf priority2 {
+			type uint8;
+			description
+				"The priority2 attribute of the local clock.";
+		}
+
+		leaf domain-number {
+			type uint8;
+			description
+                "The domain number of the current syntonization domain.";
+		}
+
+		leaf slave-only {
+			type boolean;
+			description
+				"When set, the clock is a slave-only clock.";
+		}
+		leaf version-number {
+            type uint8;
+            description
+                "The PTP version in use on the port.";
+        }
+    }
+
+    grouping time-properties-ds-entry {
+        description
+    		"Collection of members of the timeProperties data set.";
+    	leaf current-utc-offset-valid {
+    		type boolean;
+            description
+    			"When set, the current UTC offset is valid.";
+    	}
+    	leaf current-utc-offset {
+    		type int16;
+    		default 37;
+    		description
+    			"The offset between TAI and UTC when the epoch of the
+    			PTP system is the PTP epoch, i.e., when ptp-timescale
+    			is TRUE; otherwise, the value has no meaning.";
+    	}
+    	leaf leap59 {
+    		type boolean;
+    		default false;
+    		description
+    			"When set, the last minute of the current UTC day
+    			contains 59 seconds.";
+    	}
+    	leaf leap61 {
+    		type boolean;
+    		default false;
+    		description
+    			"When set, the last minute of the current UTC day
+    			contains 61 seconds.";
+    	}
+    	leaf time-traceable {
+    		type boolean;
+    		default true;
+    		description
+    			"When set, the timescale and the currentUtcOffset are
+    			traceable to a primary reference.";
+    	}
+    	leaf frequency-traceable {
+    		type boolean;
+    		description
+    			"When set, the frequency determining the timescale
+    			is traceable to a primary reference.";
+    	}
+    	leaf ptp-timescale {
+    		type boolean;
+    		default true;
+    		description
+    		"When set, the clock timescale of the grandmaster
+    			clock is PTP; otherwise, the timescale is ARB
+    		   (arbitrary).";
+    	}
+    	leaf time-source {
+    		type uint8;
+    		description
+    			"The source of time used by the grandmaster clock.";
+
+    	}
+    }
+
+    grouping port-ds-entry {
+		description
+			"Collection of members of the port data set.";
+
+		container port-identity {
+			description
+				"The portIdentity attribute of the local port.";
+			uses port-identity-grouping;
+		}
+	   
+		leaf underlying-interface {
+			type string;
+			description
+				"Reference to the configured underlying interface that is
+				used by this PTP Port (see RFC 7223).";
+		}
+
+		leaf log-min-delay-req-interval {
+			type int8;
+			description
+				"The base-two logarithm of the minDelayReqInterval
+				(the minimum permitted mean time interval between
+				successive Delay_Req messages).";
+		}
+
+		leaf peer-mean-path-delay {
+			type time-interval-type;
+			default 0;
+			description
+				"An estimate of the current one-way propagation delay
+				on the link when the delayMechanism is P2P; otherwise,
+				it is zero.";
+		}
+
+		leaf log-announce-interval {
+			type int8;
+			description
+				"The base-two logarithm of the mean
+				announceInterval (mean time interval between
+				successive Announce messages).";
+		}
+
+		leaf announce-receipt-timeout {
+			type uint8;
+			description
+				"The number of announceInterval that have to pass
+				without receipt of an Announce message before the
+				occurrence of the event ANNOUNCE_RECEIPT_TIMEOUT_
+				EXPIRES.";
+		}
+
+		leaf log-sync-interval {
+			type int8;
+			description
+				"The base-two logarithm of the mean SyncInterval
+				for multicast messages.  The rates for unicast
+				transmissions are negotiated separately on a per port
+				basis and are not constrained by this attribute.";
+		}
+
+		leaf delay-mechanism {
+			type delay-mechanism-enumeration;
+			description
+				"The propagation delay measuring option used by the
+				port in computing meanPathDelay.";
+		}
+
+		leaf log-min-pdelay-req-interval {
+			type int8;
+			description
+				"The base-two logarithm of the
+				minPdelayReqInterval (minimum permitted mean time
+				interval between successive Pdelay_Req messages).";
+		}       
+    }
+
+    grouping instance-list-group {
+        leaf instance-number {
+            type uint16;
+            description
+                "The instance number of the current PTP instance";
+        }
+        container default-ds {
+            description
+                "The default data set of the clock.";
+            uses default-ds-entry;
+        }
+        container time-properties-ds {
+             description
+                 "The timeProperties data set of the clock.";
+             uses time-properties-ds-entry;
+        }
+
+        list port-ds-list {
+            key "port-number";
+            description
+                "List of port data sets of the clock.";
+            leaf port-number{
+                type uint16;
+                description
+                    "Refers to the portNumber memer of
+                    portDS.portIdentity.";
+            }
+            uses port-ds-entry;
+        }
+    }
+
+
+	container detnet-1588v2-config {
+		list ptp-device {
+			key "node-id";
+			leaf node-id {
+				type string;
+			}
+			leaf ptp-supported {
+                type boolean;
+                default true;
+                description "Whether clock component of network device supports ptp protocol.";
+            }
+			list instance-list {
+				key "instance-number";
+				description
+					"List of one or more PTP datasets in the device, one for
+					each domain (see IEEE 1588-2008 subclause 6.3).
+					Each PTP dataset represents a distinct instance of
+					PTP implementation in the device (i.e. distinct
+					Ordinary Clock or Boundary Clock).";
+
+				uses instance-list-group;
+			} 
+		}
+	}
+
+	container common-1588-config {
+        leaf log-min-delay-req-interval {
+            type int8;
+        }
+
+        leaf peer-mean-path-delay {
+            type time-interval-type;
+            default 0;
+        }
+
+        leaf log-announce-interval {
+            type int8;
+        }
+
+        leaf announce-receipt-timeout {
+            type uint8;
+        }
+
+        leaf log-sync-interval {
+            type int8;
+        }
+
+        leaf delay-mechanism {
+            type delay-mechanism-enumeration;
+        }
+
+        leaf log-min-pdelay-req-interval {
+            type int8;
+        }
+	}
+}

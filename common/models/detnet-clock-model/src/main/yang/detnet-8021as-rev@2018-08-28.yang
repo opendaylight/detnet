@@ -1,0 +1,461 @@
+module detnet-8021as-rev {
+	namespace "urn:detnet:8021as-rev";
+	prefix "detnet-8021as-rev";
+	
+	organization "zte";	
+	revision 2018-08-28 {
+		description "Initial revision.";
+	}
+	
+	
+	typedef delay-mechanism-enumeration {
+       type enumeration {
+			enum P2P {
+				value 1;
+				description
+					"The port uses the peer delay mechanism.";
+			}
+			enum COMMON-P2P {
+				value 2;
+				description
+					"The port uses the CMLDs.";
+			}
+			enum SPECIAL {
+				value 3;
+				description
+					"The gPTP port uses atransport that has a native
+					time transfer mechanism.";
+			}
+		}
+		description
+			"The propagation delay measuring option used by the
+			port. Values for this enumeration are specified
+			by the 802.1AS-Rev standard exclusively.";
+	}
+	
+	grouping default-ds-entry {
+		container defaultDataSet {
+			description
+				"The default data set represents native time capability of a
+				time-aware system and is consistent with respective
+				IEEE 1588 data set.";
+		 
+			leaf priority1 {
+				type uint32 {
+					range "0 .. 255";
+				}
+				default 246;
+				description
+					"Most-significant priority declaration in the execution
+					of the best master clock algorithm. Lower values take
+					precedence. The value of priority1 shall be 255 for a
+					time-aware system that is not grandmaster-capable.
+					The value of priority1 shall be less than 255 for a
+					time-aware system that is grandmaster-capable.
+					The value 0 shall be reserved for future
+					management use, i.e., the value of priority1 shall be set
+					to 0 only via management action, and shall not be specified
+					as a default value by a user of this standard.
+					In the absence of a default value set by a user of this
+					standard, the default value shall be set as below:
+					a) system type of network infrastructure time-aware
+					  system to value 246;
+					b) portable time-aware system, 250;
+					c) other time-aware systems, 248.";
+				reference
+					"IEEE 802.1AS: clause 14.2.7";
+			}
+			leaf priority2 {
+				type uint32 {
+					range "0 .. 255";
+				}
+			 default 248;
+				description
+					"Least-significant priority declaration in the execution
+					of the best  master clock algorithm.
+					Lower values take precedence.
+					The default value is 248.";
+				reference
+					"IEEE 802.1AS: clause 14.2.7";
+			}
+
+			leaf currentUTCOffset {
+                type int32;
+                default 37;
+            	description
+            		"The value is currentUtcOffset for the current grandmaster.
+            		The value is in units of
+            		seconds. The default value is set to currentUTCOffset.";
+            	reference
+            		"IEEE 802.1AS: clause 14.5.1";
+            }
+            leaf currentUTCOffsetValid {
+            	type boolean;
+            	default true;
+            	description
+            		"True (1) if currentUTCOffset is known to be correct;
+            		false (2) otherwise.
+            		The default value is set to currentUTCOffsetValid.";
+            	reference
+            		"IEEE 802.1AS: clause 14.5.2";
+            }
+            leaf leap59 {
+            	type boolean;
+            	default false;
+            	description
+            		"The value is leap59 for the current grandmaster. It is equal
+            		to the global variable leap59.
+            		A true (1) value indicates that the last minute of the
+            		current UTC day, relative to the ClockMaster entity of this
+            		time-aware system, will contain 59 seconds.";
+            	reference
+            		"IEEE 802.1AS: clause 14.5.3";
+            }
+            leaf leap61 {
+            	type boolean;
+            	default false;
+            	description
+            		"The value is leap61 for the current grandmaster. It is equal
+            		to the global variable leap61.
+            		A true (1) value indicates that the last minute of the
+            		current UTC day, relative to the ClockMaster entity of this
+            		time-aware system, will contain 61 seconds.";
+            	reference
+            		"IEEE 802.1AS: clause 14.5.4";
+            }
+		  
+			leaf domainNumber {
+				default 0;
+				type uint8;
+			}
+			
+			
+			leaf portNumber {
+				type uint16;
+				description "The number of logical gPTP ports.";
+			}
+		  
+			
+			leaf externalPortConfiguration {
+				default false;
+				type boolean;
+				description "Whether port state is determined by BMCA
+					or external configuration.";
+			}		
+			
+			
+			leaf instanceEnable {
+				default true;
+				type boolean;
+			}
+		}
+	}
+	
+	grouping port-ds-entry {
+		
+		leaf underlyingInterface {
+			type string;
+			description "The underlying physical port of the logical gptp port.";
+		}
+	  
+		
+		leaf delayMechanism {
+			type delay-mechanism-enumeration;
+			description "The delay measurement mechanism used by the gptp port.";
+		}
+	  
+		leaf pttPortEnabled {
+			default true;
+			type boolean;
+			description
+				"802.1AS function enable for a given port.
+				True (1) if the time-synchronization and best master selection
+				functions of the port are enabled;
+				False (2) otherwise.
+				The contents of this table SHALL be maintained across a
+				restart of the system.";
+			reference
+				"IEEE 802.1AS: clause 14.6.4";
+		}
+		leaf neighborPropDelayThresh {
+			description
+				"It is the propagation time threshold,
+				above which a port is not considered capable of participating
+				in the IEEE 802.1AS protocol.";
+			type uint32;
+			reference
+				"IEEE 802.1AS: clause 14.6.9";
+		}
+		leaf delayAsymmetry {
+			description
+				"The value is the asymmetry in the propagation delay on the link
+				attached to this port relative to the grandmaster time base.
+				If the propagation delay asymmetry is not modeled,
+				then delayAsymmetry is 0";
+			default 0;
+			type uint32;
+			reference
+				"IEEE 802.1AS: clause 14.6.9";
+		}
+	  
+		leaf initialLogAnnounceInterval {
+			type int32 {
+				range "-128 .. 127";
+			}
+			default 0;
+			description
+				"The value is the logarithm to the base 2 of the of the announce
+				interval used when
+				(a) the port is initialized, or
+				(b) a message interval request TLV is received with
+					announceInterval field set to 126
+				The default value is 0.
+				The contents of this variable SHALL be maintained across
+				a restart of the system.";
+			reference
+				"IEEE 802.1AS: clause 14.6.11";
+		}
+	  
+		leaf announceReceiptTimeout {
+			type uint32 {
+				range "0 .. 255";
+			}
+			default 2;
+			description
+				"The value of this attribute tells a slave port the number of sync
+				intervals to wait without receiving synchronization information,
+				before assuming that the master is no longer transmitting
+				synchronization information, and that the BMC algorithm needs to
+				be run, if appropriate.
+				The condition of the slave port not receiving synchronization
+				information for syncReceiptTimeout sync intervals is referred to
+				as 'sync receipt timeout'.
+				The default value is 2.";
+			reference
+				"IEEE 802.1AS: clause 14.6.13";
+		}
+		leaf initialLogSyncInterval {
+			type int32 {
+				range "-128 .. 127";
+			}
+			default -3;
+			description
+				"The value is the logarithm to the base 2 of the sync interval
+				used when,
+				(a) the port is initialized, or
+				(b) a message interval request TLV is received with the
+					timeSyncInterval field set to 126.
+				The initialization value is -3.
+				The contents of this variable SHALL be maintained across a
+				restart of the system.";
+			reference
+				"IEEE 802.1AS: clause 14.6.14";
+		}
+
+		leaf currentLogSyncInterval {
+             type int32 {
+                range "-128 .. 127";
+             }
+             description
+              "The value is the logarithm to the base 2 of the current
+               time-synchronization transmission interval";
+             reference
+              "IEEE 802.1AS: clause 14.6.15";
+        }
+	 
+		leaf syncReceiptTimeout {
+			type uint32 {
+				range "0 .. 255";
+			}
+			default 3;
+			description
+				"The value is the number of time-synchronization transmission
+				intervals that a slave port waits without receiving
+				synchronization information, before assuming that the master
+				is no longer transmitting  synchronization information and that
+				the BMCA needs to be run, if appropriate.
+				The initialization value is 3.
+				The contents of this variable SHALL be maintained across a
+				restart of the system.";
+			reference
+				"IEEE 802.1AS: clause 14.6.16";
+		}
+		leaf syncReceiptTimeoutTimeInterval {
+			description
+				"It is the time interval after which sync receipt timeout occurs
+				if time-synchronization information has not been received during
+				the interval.";
+			type uint32;
+			reference
+				"IEEE 802.1AS: clause 14.6.17";
+		}
+		leaf initialLogPdelayReqInterval {
+			type int32 {
+				range "-128 .. 127";
+			}
+			default 0;
+			description
+				"For full-duplex, IEEE 802.3 media and CSN media that use the peer
+				delay mechanism to measure path delay, the value is the logarithm
+				to the base 2 of the Pdelay_Req message transmission interval
+				used when,
+				(a) the port is initialized, or
+				(b) a message interval request TLV is received with the
+					linkDelayInterval field set to 126.
+				For these media, the initialization value is 0.
+				For all other media, the value is 127.
+				The contents of this variable SHALL be maintained across a
+				restart of the system.";
+			reference
+				"IEEE 802.1AS: clause 14.6.18";
+		}
+	  
+		leaf allowedLostResponses {
+			type uint32 {
+				range "0 .. max";
+			}
+			default 3;
+			description
+				"The value is equal to the value of the per-port global variable
+				allowedLostResponses.
+				It is the number of Pdelay_Req messages for which a valid
+				response is not received, above which a port is considered to
+				not be exchanging peer delay messages";
+			reference
+				"IEEE 802.1AS: clause 14.6.20";
+		}
+	  
+		leaf acceptableMasterTableEnabled {
+			type boolean;
+			default false;
+			description
+				"True (1) if acceptableMasterTableEnabled is true and an ONU port
+				attached  to an IEEE 802.3 EPON link in a time-aware system.
+				False (2), otherwise.
+				The default value is FALSE.";
+			reference
+			"IEEE 802.1AS: clause 14.6.24";
+		}
+	}
+
+	container detnet-8021as-rev-config {
+		list gptp-device {
+			key "nodeId";
+			leaf nodeId {
+				type string;
+			}
+			leaf gptp-supported {
+			    type boolean;
+			    default true;
+			    description "Whether clock component of network device supports gptp protocol.";
+			}
+			list gptp-instance {
+				key "instanceNumber";
+				leaf instanceNumber {
+					type uint8 {
+						range "0..7";
+					}
+				}
+
+			    uses default-ds-entry;
+
+				list portDataSet {
+					key "portNumber";
+					description
+						"A list of gPTP port related variables in a time-aware Bridge or
+						for a time-aware end station. A value of 1 is used in a bridge
+						or an end station that does not have multiple components.
+						For a given media port of a Bridge or an end station, there may
+						be one or more gPTP port, and depends whether a media port supports
+						point to point link (e.g. IEEE 802.3 Ethernet) or point to
+						multi-point (e.g. CSN, IEEE 802.3 EPON,etc) links on the
+						media port.";
+					
+					leaf portNumber {
+						type uint32;
+						mandatory true;
+						description
+							"The portNumber value for a port on a time-aware end station (i.e.,
+							a time-aware system supporting a single gPTP port) shall be 1.
+							The portNumber values for the gPTP ports on a time-aware Bridge
+							supporting N ports shall be 1, 2, ..., N, respectively";
+						reference
+							"IEEE 802.1AS: clause 14.6.2";
+					}				  
+					uses port-ds-entry;
+				}
+			}
+		}	
+	}
+
+	container common-8021as-port-config {
+	    leaf delayMechanism {
+            type delay-mechanism-enumeration;
+        }
+        leaf pttPortEnabled {
+            default true;
+            type boolean;
+        }
+
+        leaf neighborPropDelayThresh {
+            type uint32;
+        }
+        leaf delayAsymmetry {
+            default 0;
+            type uint32;
+        }
+
+        leaf initialLogAnnounceInterval {
+            type int32 {
+                range "-128 .. 127";
+            }
+            default 0;
+        }
+
+        leaf announceReceiptTimeout {
+            type uint32 {
+                range "0 .. 255";
+            }
+            default 2;
+        }
+        leaf initialLogSyncInterval {
+            type int32 {
+                range "-128 .. 127";
+            }
+            default -3;
+        }
+        leaf currentLogSyncInterval {
+             type int32 {
+                range "-128 .. 127";
+             }
+        }
+
+        leaf syncReceiptTimeout {
+            type uint32 {
+                range "0 .. 255";
+            }
+            default 3;
+        }
+        leaf syncReceiptTimeoutTimeInterval {
+            type uint32;
+        }
+        leaf initialLogPdelayReqInterval {
+            type int32 {
+                range "-128 .. 127";
+            }
+            default 0;
+        }
+
+        leaf allowedLostResponses {
+            type uint32 {
+                range "0 .. max";
+            }
+            default 3;
+        }
+
+        leaf acceptableMasterTableEnabled {
+            type boolean;
+            default false;
+        }
+	}
+}
