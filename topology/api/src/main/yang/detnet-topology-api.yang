@@ -1,0 +1,248 @@
+module detnet-topology-api {
+	namespace "urn:detnet:topology-api";
+	prefix "detnet-topology-api";
+
+	import detnet-topology {
+		prefix "detnet-topology";
+	}
+	import detnet-common {
+		prefix "detnet-common";
+	}
+	organization "zte";
+	description
+       "This module defines the northbound interface for Detnet topology managment.";
+	revision 2018-09-04 {
+		description "Initial revision.";
+	}
+
+	rpc load-topology-id {
+		output {
+			list topology {
+				key topology-id;
+				leaf topology-id {
+					type string;
+				}
+			}
+		}
+	}
+
+	rpc config-segments-to-domain {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf domain-id {
+				type uint16;
+			}
+			leaf-list segments {
+				type uint16;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc delete-segments-from-domain {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf domain-id {
+				type uint16;
+			}
+			leaf segment-id {
+				type uint16;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc add-nodes-to-segment {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf-list detnet-nodes {
+				type string;
+			}
+			leaf segment-id {
+				type uint16;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc delete-nodes-from-segment {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf-list detnet-nodes {
+				type string;
+			}
+			leaf segment-id {
+				type uint16;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc config-detnet-node {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			uses detnet-topology:detnet-node;
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc config-detnet-node-ltp {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf node-id {
+				type string;
+			}
+			uses detnet-topology:ltp;
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc config-detnet-node-traffic-class {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf node-id {
+				type string;
+			}
+			leaf tp-id {
+				type string;
+			}
+			uses detnet-topology:traffic-class-group;
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc delete-detnet-node {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf node-id {
+				type string;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc delete-detnet-node-ltp {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf node-id {
+				type string;
+			}
+			leaf tp-id {
+				type string;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc delete-detnet-node-traffic-class {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf node-id {
+				type string;
+			}
+			leaf tp-id {
+				type string;
+			}
+			leaf tc-index {
+				type uint8;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc add-detnet-link {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			uses detnet-topology:detnet-link;
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc delete-detnet-link {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf link-id {
+				type string;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc query-domain-topology {
+		input {
+			leaf topology-id {
+				type string;
+			}
+			leaf domain-id {
+				type uint16;
+			}
+		}
+		output {
+			list detnet-node {
+				uses detnet-topology:detnet-node;
+			}
+			list detnet-link {
+				uses detnet-topology:detnet-link;
+			}
+		}
+	}
+
+	rpc add-topology-id {
+	    input {
+	        leaf topology-id {
+	            type string;
+	        }
+	    }
+	    output {
+        	uses detnet-common:configure-result;
+        }
+	}
+}
