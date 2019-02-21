@@ -1,0 +1,88 @@
+module detnet-driver-api {
+	namespace "urn:detnet:driver:api";
+	prefix "driver-api";
+
+	import detnet-common {
+		prefix "detnet-common";
+	}
+	import detnet-service-manager {
+		prefix "detnet-service-manager";
+	}
+	import detnet-service-instance {
+    	prefix "detnet-service-instance";
+    }
+	
+	organization "zte";	
+	revision 2018-12-21 {
+		description "Initial revision.";
+	}
+
+	rpc write-gate-config-to-south {
+		input {
+			leaf node-id {
+				type string;
+			}
+			container gate-config-params {
+			    uses detnet-service-manager:gate-config-group;
+			}
+		}
+	}
+	
+	rpc write-bandwidth-to-south {
+		input {
+			leaf node-id {
+				type string;
+			}
+			leaf tp-id {
+				type string;
+			}
+			leaf traffic-class {
+				type uint8;
+			}
+			leaf reserved-bandwidth {
+				type uint32;
+			}
+		}
+	}
+	
+	rpc write-tsn-service-to-south {
+		input {
+			leaf node-id {
+				type string;
+			}
+			uses detnet-service-manager:vlan-mac-address-group;
+            leaf-list out-ports {
+                type string;
+            }
+		}
+	}
+
+	rpc delete-tsn-service-to-south {
+        input {
+            leaf node-id {
+                type string;
+            }
+            uses detnet-service-manager:vlan-mac-address-group;
+        }
+	}
+
+	rpc write-detnet-service-configuration {
+    	input {
+    		leaf node-id {
+    			type string;
+    		}
+    		uses detnet-service-instance:detnet-service-info;
+    	}
+    }
+
+    rpc delete-detnet-service-configuration {
+        input {
+            leaf node-id {
+                type string;
+            }
+            leaf stream-id {
+                type uint32;
+            }
+        }
+    }
+}
