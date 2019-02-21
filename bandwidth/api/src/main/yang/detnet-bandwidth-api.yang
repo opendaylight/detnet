@@ -1,0 +1,86 @@
+module detnet-bandwidth-api {
+	namespace "urn:detnet:bandwidth-api";
+	prefix "detnet-bandwidth-api";
+	
+	organization "zte";	
+	revision 2018-09-07 {
+		description "Initial revision.";
+	}
+	
+	import detnet-common {
+		prefix "detnet-common";
+    }
+	import detnet-service-manager {
+		prefix "detnet-service-manager";
+	}
+	import pce-path {
+	    prefix "pce-path";
+	}
+	import detnet-topology {
+	    prefix "detnet-topology";
+	}
+
+	rpc config-e2e-bandwidth {
+		input {
+		    leaf topology-id {
+		        type string;
+		    }
+            uses pce-path:links;
+			leaf traffic-class {
+				type uint8;
+			}
+			leaf bandwidth {
+				type uint32;
+				description "Bits per second.";
+			}			
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+	
+	rpc delete-e2e-bandwidth {
+		input {
+		    leaf topology-id {
+		        type string;
+		    }
+			uses pce-path:links;
+			leaf traffic-class {
+				type uint8;
+			}
+			leaf bandwidth {
+				type uint32;
+				description "Bits per second.";
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+	
+	rpc query-bandwidth-parameter {
+		input {
+            leaf node-id {
+                type string;
+            }
+            leaf tp-id {
+                type string;
+            }
+        }
+		output {
+		    leaf node-id {
+		        type string;
+		    }
+			uses detnet-service-manager:bandwith-manager-group;
+		}
+	}
+
+	notification link-bandwidth-change {
+	    container old-link {
+	        uses detnet-topology:detnet-link;
+	    }
+        leaf new-available-bandwidth {
+            type uint32;
+        }
+	}
+}
