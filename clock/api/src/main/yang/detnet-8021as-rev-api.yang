@@ -1,0 +1,88 @@
+module detnet-8021as-rev-api {
+	namespace "urn:detnet:8021as-rev-api";
+	prefix "detnet-8021as-rev-api";
+	
+	organization "zte";
+	description
+       "This module defines the northbound interface for Detnet 802.1AS";
+	revision 2018-09-04 {
+		description "Initial revision.";
+	}
+	
+	import detnet-8021as-rev {
+		prefix "detnet-8021as-rev";
+	}
+	
+	import detnet-common {
+		prefix "detnet-common";
+	}
+	
+	rpc config-8021as-rev-ds {
+		input {
+			leaf nodeId {
+				type string;
+			}
+			leaf instanceNumber {
+				type uint8;
+			}
+			container default-ds-input {
+			    uses detnet-8021as-rev:default-ds-entry;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+	
+	rpc config-8021as-rev-port-ds {
+		input {
+			leaf nodeId {
+				type string;
+			}
+			leaf instanceNumber {
+				type uint8;
+			}
+			leaf portNumber {
+				type uint32;
+			}
+			container port-ds-input {
+			    uses detnet-8021as-rev:port-ds-entry;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+	
+	rpc delete-8021as-rev-ds {
+		input {
+			leaf nodeId {
+				type string;
+			}
+			leaf instanceNumber {
+				type uint8;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+	rpc delete-8021as-rev-port-ds {
+		input {
+			leaf nodeId {
+				type string;
+			}
+			leaf instanceNumber {
+				type uint8;
+			}
+			leaf portNumber {
+				type uint32;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+}
+	
