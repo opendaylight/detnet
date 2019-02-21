@@ -1,0 +1,116 @@
+module pce-path {
+    yang-version 1;
+    namespace "urn:detnet:pce";
+    prefix "pce-path";
+
+    import detnet-topology {
+		prefix topo;
+	}
+
+    revision "2018-09-11" {
+        description "Initial revision of detnet pce model";
+    }
+
+    grouping links {
+        list path-link {
+            uses topo:detnet-link;
+        }
+    	leaf path-metric {
+            type uint32;
+        }
+		leaf path-delay {
+			type uint32;
+		}
+    }
+
+    grouping path-key {
+        leaf ingress-node-id {
+            type string;
+        }
+        leaf egress-node-id {
+            type string;
+        }
+    }
+
+    container graph-link {
+        leaf link-id {
+            type string;
+        }
+        container source {
+          leaf source-node {
+              type string;
+          }
+          leaf source-tp {
+              type string;
+          }
+        }
+        container dest {
+          leaf dest-node {
+              type string;
+          }
+          leaf dest-tp {
+              type string;
+          }
+        }
+        leaf metric {
+            type uint32;
+        }
+        leaf available-detnet-bandwidth {
+            type uint32;
+            mandatory true;
+        }
+        list tc-delay {
+            key "traffic-class";
+            leaf traffic-class {
+                type uint8;
+            }
+            leaf delay {
+                default 100;
+                type uint32;
+            }
+        }
+    }
+
+    grouping path {
+         leaf ingress-node-id {
+             type string;
+         }
+         list egress {
+             key "egress-node-id";
+             leaf egress-node-id {
+                 type string;
+             }
+             container path {
+                 uses links;
+             }
+         }
+    }
+
+    grouping constraint {
+        container path-constraint {
+            leaf bandwidth {
+                type uint32;
+            }
+            leaf max-delay {
+                type uint32;
+            }
+        }
+    }
+	container path-data {
+	    description "detnet path data ";
+		list path-instance {
+			key "domain-id stream-id";
+			leaf domain-id {
+				type uint16;
+			}
+			leaf stream-id {
+				type uint32;
+			}
+			leaf traffic-class {
+                type uint8;
+            }
+            uses constraint;
+			uses path;
+		}
+    }
+}
