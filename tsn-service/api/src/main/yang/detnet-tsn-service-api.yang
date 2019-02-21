@@ -1,0 +1,57 @@
+module detnet-tsn-service-api {
+	namespace "urn:detnet:tsn-service-api";
+	prefix "detnet-tsn-service-api";
+	
+	organization "zte";	
+	revision 2018-09-10 {
+		description "Initial revision.";
+	}
+	
+	import detnet-common {
+		prefix "detnet-common";
+    }
+	import detnet-service-manager {
+		prefix "detnet-service-manager";
+	}
+	
+	rpc config-tsn-service {
+		input {
+			list tsn-forwarding-items{
+				key "node-id out-port";				
+				leaf node-id {
+					type string;
+				}
+				leaf out-port {
+					type string;
+				}
+			}		
+			uses detnet-service-manager:vlan-mac-address-group;
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+	
+	rpc delete-tsn-service {
+		input {
+			leaf-list tsn-nodes {
+				type string;
+			}
+			uses detnet-service-manager:vlan-mac-address-group;	
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+	
+	rpc query-tsn-service-forwarding-item {
+		input {
+			leaf node-id {
+				type string;
+			}			
+		}
+		output {
+			uses detnet-service-manager:forwarding-item-list-group;
+		}
+	}
+}
