@@ -1,0 +1,67 @@
+module detnet-service-api {
+	namespace "urn:detnet:service:api";
+	prefix "detnet-service-api";
+	
+	import pce-path {
+		prefix "pce-path";
+	}
+	import detnet-common {
+		prefix "detnet-common";
+	}
+	import detnet-service-instance {
+        prefix "detnet-service-instance";
+    }
+	organization "zte";	
+	revision 2018-09-04 {
+		description "Initial revision.";
+	}
+
+
+	rpc create-detnet-service {
+		input {
+			leaf domain-id {
+				type uint16;
+			}
+			leaf stream-id {
+				type uint32;
+			}
+			uses detnet-service-instance:client-flows-at-uni;
+			list detnet-path {
+			    key "ingress-node egress-node";
+			    leaf ingress-node {
+			        type string;
+			    }
+			    leaf egress-node {
+			        type string;
+			    }
+			    container path {
+			        uses pce-path:links;
+			    }
+			}
+			list relay-node {
+			    key "relay-node-id";
+			    leaf relay-node-id {
+			        type string;
+			    }
+			    leaf in-encapsulation {
+			        type detnet-common:detnet-encapsulation-type;
+			    }
+			    leaf out-encapsulation {
+			        type detnet-common:detnet-encapsulation-type;
+			    }
+			}
+		}
+	}
+
+	rpc delete-detnet-service {
+		input {
+		    leaf domain-id {
+				type uint16;
+			}
+			leaf stream-id {
+				type uint32;
+			}			
+		}
+	}
+	
+}

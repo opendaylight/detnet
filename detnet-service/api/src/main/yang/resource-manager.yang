@@ -1,0 +1,48 @@
+module resource-manager {
+	namespace "urn:detnet:service:resource";
+	prefix "resource-man";
+
+	organization "zte";
+	revision 2018-12-04 {
+		description "Initial revision.";
+	}
+
+    typedef resource-type {
+        type enumeration {
+            enum service-instance-id {
+                value 1;
+            }
+            enum proxy-instance-id {
+                value 2;
+            }
+            enum mapping-instance-id {
+                value 3;
+            }
+            enum detnet-flow-id {
+                value 4;
+            }
+            enum transport-tunnel-id {
+                value 5;
+            }
+        }
+    }
+
+    container detnet-service-resource {
+        leaf service-instance-id {
+            type uint32;
+        }
+        leaf proxy-instance-id {
+            type uint32;
+        }
+        leaf mapping-instance-id {
+            type uint32;
+        }
+        leaf detnet-flow-id {
+            type uint32;
+        }
+        leaf transport-tunnel-id {
+            type uint32;
+        }
+    }
+
+}
