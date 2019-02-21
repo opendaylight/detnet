@@ -1,0 +1,115 @@
+module pce-api {
+    yang-version 1;
+    namespace "urn:detnet:pce:api";
+    prefix "pce-api";
+
+    import detnet-topology {
+		prefix topo;
+	}
+	import detnet-common {
+		prefix "detnet-common";
+	}
+	import pce-path {
+		prefix "pce-path";
+	}
+    revision "2018-09-11" {
+        description "Initial revision of detnet pce-api model";
+    }
+
+    rpc create-path {
+        input {
+            leaf topo-id {
+                type string;
+            }
+            leaf domain-id {
+                type uint16;
+            }
+            leaf stream-id {
+                type uint32;
+            }
+            leaf traffic-class {
+                type uint8;
+            }
+            leaf ingress-node-id {
+                type string;
+            }
+            list egress {
+                leaf egress-node-id {
+                    type string;
+                }
+            }
+            uses pce-path:constraint;
+
+        }
+
+        output {
+            leaf stream-id {
+				type uint32;
+            }
+            uses pce-path:path;
+		}
+	}
+
+
+
+    rpc remove-path {
+        input {
+            leaf topo-id {
+                type string;
+            }
+            leaf domain-id {
+                type uint16;
+            }
+            leaf srtream-id {
+                type uint32;
+            }
+            leaf ingress-node-id {
+                type string;
+            }
+            list egress {
+                leaf egress-node-id {
+                    type string;
+                }
+            }
+
+        }
+        output {
+			uses pce-path:path;
+		}
+    }
+
+
+
+	
+    notification path-update {
+        description
+        "Indicates that detnet path is changed.";
+        leaf topo-id {
+            type string;
+        }
+        leaf domain-id {
+			type uint16;
+		}
+		leaf stream-id {
+            type uint32;
+        }
+        uses pce-path:path;
+    }
+
+    rpc query-path {
+        input {
+            leaf topo-id {
+                type string;
+            }
+			leaf domain-id {
+				type uint16;
+			}
+            leaf stream-id {
+                type uint32;
+			}
+        }
+        output {
+            uses pce-path:path;
+        }
+    }
+}
