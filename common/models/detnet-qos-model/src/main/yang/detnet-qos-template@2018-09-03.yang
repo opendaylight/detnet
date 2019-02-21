@@ -1,0 +1,158 @@
+module detnet-qos-template {
+	namespace "urn:detnet:qos-template";
+	prefix "detnet-qos-template";
+	
+	organization "zte";
+	
+	revision 2018-09-03 {
+		description "Initial revision.";
+	}
+	
+	description 'Configure the mapping between 8021p/dscp/exp priority and'
+				+ 'traffic class. The transmission selection algorithm'
+				+ 'and maximum reservable bandwidth used by each traffic class queue.'
+				;
+		
+	typedef transmission-selection-algorithm {
+		type enumeration {
+		  enum strict {
+			value 1 ;
+			description "Strict priority";
+		  }
+		  enum cbs {
+			value 2;
+			description "Credit based shaper.";
+		  }
+		  enum ets {
+			value 3;
+			description "Enhanced transmission selection.";
+		  }
+		  enum ats {
+			value 4;
+			description "Asynchronous transmission selection;";
+		  }
+		}						
+		description "The frame transmission selection algorithm of each queue.";
+	}
+
+    grouping priority-mapping-group {
+        list priority-mapping {
+            leaf traffic-class {
+                type uint8;
+            }
+            leaf-list pcp-values {
+                type uint32;
+            }
+            leaf-list dscp-values {
+                type uint32;
+            }
+        }
+    }
+  
+	container priority-traffic-class-mapping {
+		description 'The mapping between pcp/dscp/exp and traffic class.'
+					;
+		list mapping-templates {
+			key template-name;
+			leaf template-name {
+			  type string;
+			}
+
+			container pri-8021ps {
+				description 'Configure the mapping based on 802.1p'
+							;
+				list pri-8021p {
+				  key value-8021p ;
+				  leaf value-8021p {
+					description '802.1p value, support <0-7>'
+								;
+					type uint32 {
+					  range 0..7 {
+						description '802.1p value, support <0-7>'
+									;
+					  }
+					}
+				  }
+				  leaf traffic-class {
+					type uint8;
+				  }					
+				}
+			}
+			
+			container mpls-exps {
+				description 'Configure the mapping based on MPLS-EXP'
+							;
+				list mpls-exp {					  
+				  key mpls-exp-value ;
+				  leaf mpls-exp-value {
+					description 'MPLS-EXP value, support <0-7>'
+								;
+					type uint32 {
+					  range 0..7 {
+						description 'MPLS-EXP value, support <0-7>'
+									;
+					  }
+					}
+				  }
+				  leaf traffic-class {
+					type uint8;
+				  }					  
+				}
+			}
+				
+			container ipv4-dscps {
+				description 'Configure the mapping based on IPv4 DSCP'
+							;
+				list ipv4-dscp {					
+				  key dscp-value ;
+				  leaf dscp-value {
+					description 'IPv4 DSCP value, support <0-63>'
+								;
+					type uint32 {
+					  range 0..63 {
+						description 'IPv4 DSCP value, support <0-63>'
+									;
+					  }
+					}
+				  }
+				  leaf traffic-class {
+					type uint8;
+				  }					 
+				}              
+			}
+			container tc-to-priority-mapping {
+                uses priority-mapping-group;
+            }
+		}
+	}
+
+    container qos-mapping-template {
+        leaf template-name {
+            type string;
+            description "The mapping template selected for qos.";
+        }
+    }
+
+	grouping queue-template-group {
+		leaf traffic-class {
+			type uint8;			
+		}
+		leaf detnet {
+			type boolean;
+			description 'Whether the traffic class is used by detnet flow,'
+						+ 'true:detnet flow'
+						+ 'false:non-detnet flow.';
+		}
+		leaf transmission-selection-algorithm {
+			default strict;
+			type transmission-selection-algorithm;
+		}
+	}
+	
+	container queue-template {	
+		list traffic-classes {
+			key "traffic-class";
+			uses queue-template-group;
+		}
+	}		
+}
