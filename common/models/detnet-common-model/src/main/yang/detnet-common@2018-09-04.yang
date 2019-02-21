@@ -1,0 +1,276 @@
+module detnet-common {
+	namespace "urn:detnet:common";
+	prefix "detnet-common";
+	
+	organization "zte";	
+	revision 2018-09-04 {
+		description "Initial revision.";
+	}
+
+	import ietf-inet-types {
+	    prefix "inet";
+	}
+
+	import ietf-yang-types {
+        prefix "yang";
+    }
+
+     import ietf-ethertypes {
+       prefix "eth";
+     }
+    
+	grouping configure-result {
+		container configure-result {
+			leaf result {
+				type enumeration {
+					enum SUCCESS;
+					enum FAILURE;
+				}
+			}
+			leaf errorCause {
+				type string;
+			}
+		}
+	}
+
+	notification report-message {
+        leaf failure-reason {
+            type string;
+        }
+    }
+
+	typedef preof-type {
+        type enumeration {
+            enum PRF {
+			    value 1;
+				description
+				"replication";
+            }
+            enum PEF {
+				value 2;
+                description
+                "elimination";
+            }
+		    enum POF {
+				value 3;
+             description
+               "ordering";
+            }
+            enum PREF {
+				value 4;
+                description
+                "elimination-and-replication";
+            }
+			enum PEOF {
+				value 5;
+                description
+                "elimination-and-ordering";
+            }
+			enum NONE {
+				value 6;
+                description
+                "No preof function.";
+            }
+        }
+    }
+
+
+	typedef detnet-encapsulation-type {
+		type enumeration {
+			enum tsn {
+				value 0;
+				description
+					"Encapsulate incoming packets as TSN.";
+			}
+			enum mpls {
+				value 1;
+				description
+					"Encapsulate incoming packets as DetNet MPLS.";
+			}
+			enum ipv6 {
+				value 2;
+				description
+					"Encapsulate incoming packets as Detnet ipv6.";
+			}
+			enum ipv4 {
+				value 3;
+				description
+					"Encapsulate incoming packets as Detnet ipv4.";
+			}
+			enum none {
+				value 4;
+				description
+					"Not network edge node,need not encapsulate the incomming packet.";
+			}
+		}
+	}
+
+	grouping traffic-specification {
+       description
+         "traffic-specification specifies how the Source
+          transmits packets for the flow.  This is the
+          promise/request of the Source to the network.
+          The network uses this traffic specification
+          to allocate resources and adjust queue
+          parameters in network nodes.";
+       reference
+         "draft-ietf-detnet-flow-information-model";
+
+       leaf interval {
+         type uint32;
+         description
+           "The period of time in which the traffic
+            specification cannot be exceeded, in milli second.";
+       }
+       leaf max-packets-per-interval{
+         type uint32;
+         description
+           "The maximum number of packets that the
+            source will transmit in one Interval.";
+       }
+       leaf max-payload-size{
+         type uint32;
+         description
+            "The maximum payload size that the source
+             will transmit.";
+       }
+     }
+	 
+	 grouping l2-flow-identification-at-uni {
+       description
+         "Layer 2 flow identification at UNI.";
+       leaf source-mac-address {
+          type yang:mac-address;
+
+         description
+           "The source MAC address used for
+            flow identification.";
+       }
+       leaf destination-mac-address {
+          type yang:mac-address;
+
+         description
+           "The destination MAC address used for
+            flow identification.";
+       }
+
+       leaf ethertype {
+         type eth:ethertype;
+         description
+           "The Ethernet Type (or Length) value represented
+            in the canonical order defined by IEEE 802.
+            The canonical representation uses lowercase
+            characters.";
+         reference
+           "IEEE 802-2014 Clause 9.2";
+       }
+
+       leaf vlan-id {
+         type uint16 {
+           range "1..4094";
+         }
+         description
+           "Vlan Identifier used for L2 flow identification.";
+       }
+       leaf pcp {
+         type uint8 {
+			range "0..7";
+		 }
+         description
+           "PCP used for L2 flow identification.";
+       }
+     }
+	 
+	 grouping l3-flow-identification-at-uni {
+       description
+         "Layer 3 flow identification at UNI.";
+       uses ip-flow-identification;
+     }
+	 
+	 grouping ip-flow-identification {
+       description
+           "IP flow identification.";
+       choice ip-flow-type {
+         description
+           "IP flow types: IPv4, IPv6.";
+         case ipv4 {
+           description
+             "IPv4 flow identification.";
+           leaf src-ipv4-address {
+             type inet:ipv4-address;
+             description
+               "The source IP address of the header.";
+           }
+           leaf dest-ipv4-address {
+             type inet:ipv4-address;
+             description
+               "The destination IP address of the header.";
+           }
+           leaf dscp {
+             type uint8 {
+				range "0..63";
+			 }
+             description
+               "The DSCP field of the header.";
+           }
+         }
+         case ipv6 {
+           description
+             "IPv6 flow identification.";
+           leaf src-ipv6-address {
+             type inet:ipv6-address;
+             description
+               "The source IP address of the header.";
+           }
+           leaf dest-ipv6-address {
+             type inet:ipv6-address;
+             description
+               "The destination IP address of the header.";
+           }
+           leaf traffic-class {
+             type uint8;
+             description
+               "The traffic class value of the header.";
+           }
+           leaf flow-label {
+             type inet:ipv6-flow-label;
+             description
+               "The flow label of the header.";
+           }
+         }
+       }
+       leaf source-port {
+         type inet:port-number;
+         description
+           "The source port number.";
+       }
+       leaf destination-port {
+         type inet:port-number;
+         description
+           "The destination port number.";
+       }
+       leaf protocol {
+         type uint8;
+         description
+           "The protocol id of the header.";
+       }
+     }
+    grouping flow-type-group {
+     choice flow-type {
+        description
+          "Client flow type: layer 2 flow, layer 3
+           flow.";
+        case l2-flow-identfication {
+          description
+            "Ethernet flow identification.";
+          uses detnet-common:l2-flow-identification-at-uni;
+        }
+        case l3-flow-identification {
+          description
+            "layer 3 flow identification, including
+             IPv4,IPv6 and MPLS.";
+          uses detnet-common:l3-flow-identification-at-uni;
+        }
+      }
+     }
+}
