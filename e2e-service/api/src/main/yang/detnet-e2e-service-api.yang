@@ -1,0 +1,155 @@
+module detnet-e2e-service-api {
+	namespace "urn:detnet:e2e-service-api";
+	prefix "detnet-e2e-service-api";
+	
+	import detnet-common {
+		prefix "detnet-common";
+    }
+	import detnet-service-manager {
+		prefix "detnet-service-manager";
+	}
+	
+	import pce-path {
+		prefix "pce-path";
+	}
+	
+	organization "zte";
+	description
+       "This module defines the northbound interface for Detnet E2E service managment.";
+	revision 2018-09-07 {
+		description "Initial revision.";
+	}
+	
+	rpc config-e2e-service {
+		input {
+			uses detnet-service-manager:e2e-service-group;
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+	rpc delete-e2e-service {
+		input {
+		    leaf topology-id {
+		        type string;
+		    }
+		    leaf domain-id {
+		        type uint16;
+		    }
+			leaf stream-id {
+				type uint32;
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+
+
+	rpc query-e2e-service-path {
+		input {
+		    leaf topology-id {
+		        type string;
+		    }
+			leaf domain-id {
+				type uint16;
+			}
+			leaf stream-id {
+				type uint32;
+			}
+		}
+		output {
+			container talker {
+				leaf node-id {
+					type string;
+				}
+				leaf tp-id {
+					type string;
+				}
+			}
+			list listener {
+				key "node-id";
+				leaf node-id {
+					type string;
+				}
+				leaf tp-id {
+					type string;
+				}
+			}
+
+            leaf-list links {
+                type string;
+            }
+            uses detnet-common:configure-result;
+		}
+	}
+
+	rpc query-e2e-service-bandwidth {
+		input {
+			leaf stream-id {
+				type uint32;
+			}
+		}
+		output {
+			leaf traffic-class {
+				type uint8;
+			}
+			list e2e-service-bandwidth {
+				key "node-id tp-id";
+				leaf node-id {
+					type string;
+				}
+				leaf tp-id {
+					type string;
+				}
+				leaf reserved-bandwidth {
+					type uint64;
+					description "Bits per second.";
+				}
+				leaf avaliable-bandwidth {
+					type uint64;
+					description "Bits per second.";
+				}
+			}
+		}
+	}
+
+	rpc query-e2e-service-gate {
+		input {
+			leaf stream-id {
+				type uint32;
+			}
+		}
+		output {
+			leaf traffic-class {
+				type uint8;
+			}
+			list e2e-service-gate {
+				key "node-id tp-id";
+				leaf node-id {
+					type string;
+				}
+				leaf tp-id {
+					type string;
+				}
+				container admin-cycletime {
+					leaf numerator {
+						type uint8;
+					}
+					leaf denominator {
+						type uint32;
+					}
+				}
+
+				leaf admin-control-list-length {
+					type uint32;
+				}
+				leaf-list gate-states {
+					type boolean;
+				}
+			}
+		}
+	}
+		
+}
