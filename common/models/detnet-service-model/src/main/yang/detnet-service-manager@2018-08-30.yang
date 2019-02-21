@@ -1,0 +1,252 @@
+module detnet-service-manager {
+	namespace "urn:detnet:service-manager";
+	prefix "detnet-service-manager";
+	
+	import ietf-inet-types {
+       prefix "inet";
+    }
+
+	import detnet-common {
+		prefix "detnet-common";
+	}
+	
+	organization "zte";	
+	revision 2018-08-30 {
+		description "Initial revision.";
+	}
+  
+	grouping user-to-network-requirements {
+		description
+			"This YANG grouping specifies user requirements
+			for the Stream, such as latency and redundancy.";
+		leaf num-seamless-trees {
+			type uint8;
+			default 1;
+			description
+				"num-seamless-trees specifies the number of trees
+				that the network will configure to deliver seamless 
+				redundancy for the Stream.";
+		}
+		leaf max-latency {
+			type uint32;
+			default 0;
+			description
+				"Maximum latency from Talker to
+				Listener(s) for a single frame of the Stream.";
+		}
+	}
+
+	grouping talker-status-group {
+		leaf source-node {
+			type string;
+		}
+		leaf source-tp {
+			type string;
+		}
+		uses user-to-network-requirements;
+		uses detnet-common:flow-type-group;
+	}
+	
+	grouping listener-status-group {
+		leaf dest-node {
+			type string;
+		}
+		leaf dest-tp {
+			type string;
+		}
+		uses user-to-network-requirements;
+	}
+	
+	
+	grouping e2e-service-group {
+        leaf topology-id {
+            type string;
+        }
+		leaf domain-id {
+			type uint16;
+		}
+		leaf stream-id {
+			type uint32;
+		}
+		
+		leaf stream-rank {
+			default 0;
+			type uint8 {
+				range "0..1";
+			}
+		}
+		
+		uses detnet-common:traffic-specification;
+		uses talker-status-group;
+		list listeners {
+			key "dest-node dest-tp";
+			uses listener-status-group;
+		}					
+	}
+
+	grouping vlan-mac-address-group {
+        leaf vlan-id {
+            type uint16 {
+                 range "0..4095";
+            }
+            default 10;
+        }
+        leaf group-mac-address {
+            type string {
+                pattern '[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}';
+            }
+            default "01:00:5e:00:01:00";
+        }
+    }
+	
+	container e2e-service-manager {
+		list e2e-service {
+			key "topology-id domain-id stream-id";
+			uses e2e-service-group;
+
+			leaf traffic-class {
+			    type uint8;
+			}
+			leaf bandwidth-required {
+			    type uint32;
+			}
+			uses vlan-mac-address-group;
+		}			
+	}
+
+	container resources-pool {
+	    uses vlan-mac-address-group;
+
+	    leaf client-flow-id {
+	        type uint32;
+	        default 1;
+	    }
+	}
+		
+	grouping gate-config-group {
+
+		leaf tp-id {
+			type string;
+		}
+		
+		container admin-basetime {
+			leaf seconds {
+				type uint64;
+			}
+			leaf nanoseconds {
+				type uint32;
+			}
+			description "Ptp timescale.";
+		}
+		
+		container admin-cycletime {
+			leaf numerator {
+			    default 1;
+				type uint8;
+			}
+			leaf denominator {
+				type uint32;
+			}
+			description "Expressed as rational number of second.";
+		}
+		
+		leaf admin-control-list-length {
+			type uint32;
+		}
+
+		container admin-control-list {
+		    list gate-states {
+		        leaf gate-state {
+		            type uint8;
+		            description "The bits of the octet represent the gate states for the
+                                            corresponding traffic classes; the MS bit corresponds to
+                                            traffic class 7, the LS bit to traffic class 0. A bit
+                                            value of 0 indicates closed; a bit value of 1 indicates open.";
+		        }
+                ordered-by user;
+            }
+            leaf time-interval {
+                type uint32;
+            }
+		}
+
+		leaf admin-gate-states {
+			type uint8;
+			description "The bits of the octet represent the gate states for the
+						corresponding traffic classes.";
+		}
+		
+		leaf admin-cycletime-extension {
+			type uint32;
+			description "Nanoseconds.";
+		}
+		
+		leaf gate-enabled {
+			default true;
+			type boolean;
+			description "Indicates whether state machines enabled/disabled.";
+		}
+		
+		leaf config-change { 
+			type boolean;
+			description "Indicates new admin parameters are 
+						ready to copied to operational parameters.";
+		}					
+	}
+	
+	container gate-config-manager {
+		list gate-config {
+			key "node-id tp-id";
+            leaf node-id {
+                type string;
+            }
+			uses gate-config-group;
+		}
+	}
+	
+	grouping bandwith-manager-group {
+		leaf tp-id {
+			type string;
+		}
+		list traffic-classes {
+			key tc-index;
+			leaf tc-index {
+				type uint8;
+			}
+			leaf reserved-bandwidth {
+				type uint32;
+				description "K bits per second.";
+			}
+		}		
+	}
+	
+	container bandwidth-config-manager {
+		list bandwidth-config {
+			key "node-id tp-id";
+			leaf node-id {
+                type string;
+            }
+			uses bandwith-manager-group;
+		}
+	}
+
+	grouping forwarding-item-list-group {
+	    list forwarding-item-list {
+            key "vlan-id group-mac-address";
+            uses vlan-mac-address-group;
+            leaf-list out-ports {
+                type string;
+            }
+        }
+	}
+
+	container tsn-service-manager {
+		list tsn-service {
+			key "node-id";
+			leaf node-id {
+				type string;
+			}
+            uses forwarding-item-list-group;
+		}
+	}
+}

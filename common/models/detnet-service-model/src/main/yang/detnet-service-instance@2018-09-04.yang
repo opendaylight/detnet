@@ -1,0 +1,341 @@
+module detnet-service-instance {
+	namespace "urn:detnet:service-instance";
+	prefix "detnet-service-instance";
+	
+	import ietf-inet-types {
+       prefix "inet";
+    }
+	import pce-path {
+		prefix "pce-path";
+	}
+	import detnet-common {
+		prefix "detnet-common";
+	}
+	organization "zte";	
+	revision 2018-09-04 {
+		description "Initial revision.";
+	}
+		
+	typedef sequence-number-type {
+		type enumeration {
+            enum generation {
+			    value 1;
+            }
+			enum copy {
+				value 2;
+			}
+		}
+	}
+
+     grouping client-flows-at-uni {
+       description
+         "The attributes of the client flow at UNI. When
+          flow aggregation is enabled at ingress, multiple
+          client flows map to a DetNet service instance.";
+       list client-flow {
+         key "client-flow-id";
+         description
+           "A list of client flows.";
+         leaf client-flow-id {
+           type uint32;
+           description
+             "Flow identifier that is unique in a network
+              device for client flow identification";
+         }
+         uses detnet-common:flow-type-group;
+         container traffic-specification {
+           description
+             "The traffic specification of the client flow.";
+           uses detnet-common:traffic-specification;
+         }
+       }
+     }
+	
+     grouping detnet-flow-identification {
+       description
+         "Layer 3 flow identification in the DetNet
+          domain.";
+	   leaf detnet-flow-id {
+	      type uint32;
+	   }
+       choice flow-type {
+         description
+           "L3 DetNet flow types: IP and MPLS.";
+         case IP {
+           description
+             "IP (IPv4 or IPv6) flow identification.";
+           uses detnet-common:ip-flow-identification;
+         }
+         case MPLS {
+           description
+             "MPLS pw";
+           uses vpn;
+           }
+         }
+       }
+
+
+     grouping ipv4-header {
+       description
+         "The IPv4 header encapsulation information.";
+       leaf src-ipv4-address {
+         type inet:ipv4-address;
+         mandatory true;
+         description
+           "The source IP address of the header.";
+       }
+       leaf dest-ipv4-address {
+         type inet:ipv4-address;
+         mandatory true;
+         description
+           "The destination IP address of the header.";
+       }
+       leaf protocol {
+         type uint8;
+         mandatory true;
+         description
+           "The protocol id of the header.";
+       }
+       leaf ttl {
+         type uint8;
+         description
+           "The TTL of the header.";
+       }
+       leaf dscp {
+         type uint8;
+         description
+           "The DSCP field of the header.";
+       }
+     }
+
+     grouping ipv6-header {
+       description
+         "The IPv6 header encapsulation information.";
+       leaf src-ipv6-address {
+         type inet:ipv6-address;
+         mandatory true;
+         description
+           "The source IP address of the header.";
+       }
+       leaf dest-ipv6-address {
+         type inet:ipv6-address;
+         mandatory true;
+         description
+           "The destination IP address of the header.";
+       }
+       leaf next-header {
+         type uint8;
+         mandatory true;
+         description
+           "The next header of the IPv6 header.";
+       }
+       leaf traffic-class {
+         type uint8;
+         description
+           "The traffic class value of the header.";
+       }
+       leaf flow-label {
+         type inet:ipv6-flow-label;
+         description
+           "The flow label of the header.";
+       }
+       leaf hop-limit {
+         type uint8 {
+           range "1..255";
+         }
+         description
+           "The hop limit of the header.";
+       }
+     }
+	 
+	grouping detnet-transport-tunnel{
+       description
+         "Defines the transport tunnel encapsulation
+          header.";
+	   leaf transport-tunnel-id {
+	       type uint32;
+	   }
+       choice tunnel-type {
+         description
+         "Tunnel type includes: IPv4, IPv6, MPLS.";
+         case IPv4 {
+           description
+             "IPv4 tunnel.";
+           container ipv4-encapsulation {
+             description
+               "IPv4 encapsulation.";
+             uses ipv4-header;
+           }
+         }
+         case IPv6 {
+           description
+             "IPv6 tunnel.";
+           container ipv6-encapsulation {
+             description
+               "IPv6 encapsulation.";
+             uses ipv6-header;
+           }
+         }
+         case MPLS {
+           description
+             "MPLS tunnel.";
+           container mpls-encapsulation {
+             description
+               "MPLS encapsulation.";
+             uses mpls-tunnel;
+           }
+         }
+       }
+     }
+	
+	grouping detnet-service {
+		list detnet-services {
+			key "detnet-flow-id";
+			leaf detnet-flow-id {
+				type uint32;
+			}
+			leaf detnet-transport-id {
+				type uint32;
+			}
+		}			
+    }	
+	
+	grouping detnet-service-proxy-instance {		
+		leaf service-proxy-instance-id {
+			type uint32;
+		}
+		leaf-list client-flow-id {
+			type uint32;
+		}
+		leaf sequence-number-mode {
+			type sequence-number-type;
+		}
+		leaf service-operation {
+			type detnet-common:preof-type;
+		}			
+		uses detnet-service;
+	}
+	
+	grouping detnet-service-mapping-instance {    
+		leaf service-mapping-instance-id {
+			type uint32;
+		}
+		leaf service-operation {
+			type detnet-common:preof-type;
+		}
+		leaf sequence-number-mode {
+			type sequence-number-type;
+		}
+		container in-segment {
+			uses detnet-service;
+			uses detnet-common:traffic-specification;
+		}
+		container out-segment {
+			uses detnet-service;
+		}	
+	}
+	
+	grouping vpn {
+		container vpn {
+			leaf local {
+			    type inet:ipv4-address;
+			}
+			leaf peer {
+				type inet:ipv4-address;
+
+			}
+		}
+	}
+	
+	grouping mpls-tunnel {
+	    container mpls-tunnel {
+	        leaf source-node-id {
+	            type string;
+	        }
+			leaf dest-node-id {
+				type string;
+			}
+			leaf dest-router-id {
+				type inet:ipv4-address;
+			}
+			container explicit-path {
+				uses pce-path:links;
+			}
+		}
+	}
+
+	grouping detnet-service-info {
+
+        leaf stream-id {
+            type uint32;
+        }
+        uses client-flows-at-uni;
+
+        list service-proxy-instance {
+            key "service-proxy-instance-id";
+            uses detnet-service-proxy-instance;
+        }
+
+        list service-mapping-instance {
+            key "service-mapping-instance-id";
+            uses detnet-service-mapping-instance;
+        }
+
+        list detnet-flows {
+            key "detnet-flow-id";
+            uses detnet-flow-identification;
+        }
+
+        list detnet-transport-tunnels {
+            key "transport-tunnel-id";
+            uses detnet-transport-tunnel;
+        }
+	}
+	
+	container detnet-service-instance-manager {
+        list services {
+            key "domain-id stream-id";
+            leaf domain-id {
+                type uint16;
+            }
+            leaf stream-id {
+                type uint32;
+            }
+            list service-proxy-instances {
+                key "node-id service-proxy-instance-id";
+                leaf node-id {
+                    type string;
+                }
+                leaf service-proxy-instance-id {
+                    type uint32;
+                }
+            }
+            list service-mapping-instances {
+                key "node-id service-mapping-instance-id";
+                leaf node-id {
+                    type string;
+                }
+                leaf service-mapping-instance-id {
+                    type uint32;
+                }
+            }
+        }
+
+	}
+	
+	container device-detnet-service-manager {
+		list nodes {
+			key "node-id";
+			leaf node-id {
+				type string;
+			}
+			list domain-service {
+				key "domain-id stream-id";
+				leaf domain-id {
+                    type uint16;
+                }
+				uses detnet-service-info;
+			}			
+		}
+	}	
+}
