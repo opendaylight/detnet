@@ -1,0 +1,74 @@
+module detnet-gate-api {
+	namespace "urn:detnet:gate-api";
+	prefix "detnet-gate-api";
+	
+	organization "zte";	
+	revision 2018-09-07 {
+		description "Initial revision.";
+	}
+	
+	import detnet-common {
+		prefix "detnet-common";
+    }
+	import detnet-service-manager {
+		prefix "detnet-service-manager";
+	}
+
+    import pce-path {
+        prefix "pce-path";
+    }
+	
+	rpc config-e2e-gate {
+		input {
+			uses pce-path:links;
+			leaf topology-id {
+			    type string;
+			}
+			leaf traffic-class {
+				type uint8;
+			}
+			leaf bandwidth {
+				type uint32;
+				description "K bits per second.";
+			}			
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+	
+	rpc delete-e2e-gate {
+		input {
+		    leaf topology-id {
+		        type string;
+		    }
+			uses pce-path:links;
+			leaf traffic-class {
+				type uint8;
+			}
+			leaf bandwidth {
+				type uint32;
+				description "K bits per second.";
+			}
+		}
+		output {
+			uses detnet-common:configure-result;
+		}
+	}
+	
+	rpc query-gate-parameter {
+		input {
+			leaf node-id {
+				type string;
+			}
+			leaf tp-id {
+				type string;
+			}
+		}
+		output {
+		    container gate-parameter {
+		        uses detnet-service-manager:gate-config-group;
+		    }
+		}
+	}
+}
