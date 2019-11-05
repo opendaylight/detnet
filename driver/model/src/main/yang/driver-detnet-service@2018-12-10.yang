@@ -1,0 +1,56 @@
+module driver-detnet-service {
+	namespace "urn:detnet:driver:yang:service";
+	prefix "driver-detnet-service";
+	
+	import detnet-service-instance {
+       prefix "detnet-service-instance";
+    }
+
+    import detnet-common {
+        prefix "detnet-common";
+    }
+
+    import detnet-service-manager {
+        prefix "detnet-service-manager";
+    }
+
+	organization "zte";	
+	revision 2018-12-10 {
+		description "Initial revision.";
+	}
+
+    container detnet-configuration {
+        container detnet-service-configuration {
+            list service {
+                key "stream-id";
+                uses detnet-service-instance:detnet-service-info;
+            }
+        }
+
+        container gate-configuration {
+            list gate-config-list {
+                key "tp-id" ;
+                uses detnet-service-manager:gate-config-group;
+            }
+        }
+
+        container bandwidth-configuration {
+            list bandwidth-config-list {
+                key "tp-id";
+                uses detnet-service-manager:bandwith-manager-group;
+            }
+        }
+
+        container tsn-service-configuration {
+            uses detnet-service-manager:forwarding-item-list-group;
+        }
+
+        container flow-to-vlan-mac-mapping {
+            list flow-vlan-mac-mapping-list {
+                key "vlan-id group-mac-address";
+                uses detnet-service-manager:vlan-mac-address-group;
+                uses detnet-common:flow-type-group;
+            }
+        }
+    }
+}
