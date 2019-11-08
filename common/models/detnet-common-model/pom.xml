@@ -26,9 +26,8 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
 
   <dependencies>
     <dependency>
-        <groupId>org.opendaylight.mdsal.model</groupId>
-        <artifactId>ietf-yang-types-20130715</artifactId>
-        <!--<version>2013.07.15.13.0</version>-->
+	<groupId>org.opendaylight.mdsal.binding.model.ietf</groupId>
+    <artifactId>rfc6991-ietf-yang-types</artifactId>
     </dependency>
     <dependency>
       <groupId>org.opendaylight.detnet</groupId>
@@ -36,8 +35,8 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.opendaylight.mdsal.model</groupId>
-      <artifactId>ietf-inet-types-2013-07-15</artifactId>
+	  <groupId>org.opendaylight.mdsal.binding.model.ietf</groupId>       
+      <artifactId>rfc6991-ietf-inet-types</artifactId>
     </dependency>
 </dependencies>
 </project>
