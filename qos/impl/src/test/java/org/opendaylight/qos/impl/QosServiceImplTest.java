@@ -11,7 +11,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +26,7 @@ import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.Delete
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.DeleteMappingTemplateInputBuilder;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.QueryMappingTemplateInput;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.QueryMappingTemplateInputBuilder;
+import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.QueryMappingTemplateOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.PriorityTrafficClassMapping;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.priority.mapping.group.PriorityMapping;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.priority.mapping.group.PriorityMappingBuilder;
