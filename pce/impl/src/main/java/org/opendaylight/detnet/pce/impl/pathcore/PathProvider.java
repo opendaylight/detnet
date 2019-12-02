@@ -34,7 +34,7 @@ public class PathProvider<T extends ITransformer<GraphLink>> {
     private LinkedList<GraphLink> path;
     private List<GraphLink> oldPath;
     private List<GraphLink> tryToOverlapLinks = Lists.newArrayList();
-    private List<GraphLink> excludePaths = new ArrayList<>();
+    private List<GraphLink> excludePaths = new ArrayList<GraphLink>();
     private PathUnifyKey pathUnifyKey;
     private long pathMetric;
     private long pathDelay;
@@ -115,8 +115,8 @@ public class PathProvider<T extends ITransformer<GraphLink>> {
         cspf.setDestNodeList(destNodeList);
         cspf.setTrafficClass(trafficClass);
         if (pathConstraint != null) {
-            cspf.setBandwidth(pathConstraint.getBandwidth());
-            cspf.setMaxDelay(pathConstraint.getMaxDelay());
+            cspf.setBandwidth(pathConstraint.getBandwidth().longValue());
+            cspf.setMaxDelay(pathConstraint.getMaxDelay().longValue());
         }
 /*
         Map<String, List<DetnetLink>> incomingMap = cspf.getIncomingEdgeMap();
@@ -147,7 +147,7 @@ public class PathProvider<T extends ITransformer<GraphLink>> {
     }
 
     private Map<String, List<GraphLink>> calcIncomingMap() {
-        List<String> destNodeList = new ArrayList<>();
+        List<String> destNodeList = new ArrayList<String>();
         destNodeList.add(egressNodeId);
 
         OptimalPath<String, GraphLink> sp = new OptimalPath(

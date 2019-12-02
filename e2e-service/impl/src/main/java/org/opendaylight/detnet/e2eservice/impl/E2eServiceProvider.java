@@ -32,7 +32,7 @@ public class E2eServiceProvider {
      * Method called when the blueprint container is created.
      */
     public void init() {
-        LOG.info("E2eServiceProvider Session Initiated");
+        //LOG.info("E2eServiceProvider Session Initiated");
         e2eServiceImpl = new E2eServiceImpl(dataBroker,rpcRegistry);
         e2eService = rpcRegistry.addRpcImplementation(DetnetE2eServiceApiService.class,e2eServiceImpl);
     }
@@ -41,7 +41,7 @@ public class E2eServiceProvider {
      * Method called when the blueprint container is destroyed.
      */
     public void close() {
-        LOG.info("E2eServiceProvider Closed");
+        //LOG.info("E2eServiceProvider Closed");
         if (e2eService != null) {
             e2eService.close();
         }

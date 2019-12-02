@@ -7,18 +7,20 @@
  */
 package org.opendaylight.detnet.detnetservice.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.netty.util.internal.ConcurrentSet;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
 
 import org.opendaylight.detnet.common.util.RpcReturnUtil;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.links.PathLink;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.api.rev180904.CreateDetnetServiceInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.service.api.rev180904.CreateDetnetServiceOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.api.rev180904.DeleteDetnetServiceInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.service.api.rev180904.DeleteDetnetServiceOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.api.rev180904.DetnetServiceApiService;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.api.rev180904.create.detnet.service.input.DetnetPath;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.api.rev180904.create.detnet.service.input.RelayNode;
@@ -36,8 +38,10 @@ import org.slf4j.LoggerFactory;
 
 public final class DetnetServiceImpl implements DetnetServiceApiService {
     private static final Logger LOG = LoggerFactory.getLogger(DetnetServiceImpl.class);
-    private ConcurrentHashMap<SegmentPathKey, ServiceInstance> serviceInstances = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, Set<SegmentPathKey>> relayNodeSegmentMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<SegmentPathKey, ServiceInstance> serviceInstances =
+            new ConcurrentHashMap<SegmentPathKey, ServiceInstance>();
+    private ConcurrentHashMap<String, Set<SegmentPathKey>> relayNodeSegmentMap =
+            new ConcurrentHashMap<String, Set<SegmentPathKey>>();
     private static DetnetServiceImpl instance = new DetnetServiceImpl();
 
     private DetnetServiceImpl() {
@@ -48,16 +52,16 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
     }
 
     @Override
-    public Future<RpcResult<Void>> deleteDetnetService(DeleteDetnetServiceInput input) {
+    public ListenableFuture<RpcResult<DeleteDetnetServiceOutput>> deleteDetnetService(DeleteDetnetServiceInput input) {
         if (input == null || input.getDomainId() == null || input.getStreamId() == null) {
             return RpcReturnUtil.returnErr("input information error!");
         }
-        LOG.info("DeleteDetnetServiceInput:" + input);
-        Services services = getServicesFromDB(input.getDomainId(),input.getStreamId());
+        //LOG.info("DeleteDetnetServiceInput:" + input);
+        Services services = getServicesFromDB(input.getDomainId().intValue(),input.getStreamId().longValue());
         String result = DetnetServiceDb.getInstance()
-                .deleteDetnetServiceFromDB(input.getDomainId(),input.getStreamId(), services);
+                .deleteDetnetServiceFromDB(input.getDomainId().intValue(),input.getStreamId().longValue(), services);
         if (!result.equals("")) {
-            LOG.info("DeleteDetnetService failed! resultMsg: " + result);
+            //LOG.info("DeleteDetnetService failed! resultMsg: " + result);
             return RpcReturnUtil.returnErr(result);
         }
         return RpcReturnUtil.returnSucess(null);
@@ -68,22 +72,23 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
     }
 
     @Override
-    public Future<RpcResult<Void>> createDetnetService(CreateDetnetServiceInput input) {
+    public ListenableFuture<RpcResult<CreateDetnetServiceOutput>> createDetnetService(CreateDetnetServiceInput input) {
         if (input == null || input.getDomainId() == null || input.getStreamId() == null
                 || input.getDetnetPath() == null || input.getDetnetPath().isEmpty()) {
             return RpcReturnUtil.returnErr("input information error!");
         }
-        LOG.info("CreateDetnetServiceInput:" + input);
+        //LOG.info("CreateDetnetServiceInput:" + input);
         StringBuffer resultMsg = new StringBuffer();
         for (DetnetPath path : input.getDetnetPath()) {
-            resultMsg.append(generateSegmentsAndServiceInstances(input.getDomainId(),input.getStreamId(),
+            resultMsg.append(generateSegmentsAndServiceInstances(input.getDomainId().intValue(),
+                    input.getStreamId().longValue(),
                     input.getClientFlow(), path.getIngressNode(), path.getEgressNode(),path.getPath(),
                     input.getRelayNode()));
             serviceInstances.clear();
             relayNodeSegmentMap.clear();
         }
         if (!resultMsg.toString().equals("")) {
-            LOG.info("CreateDetnetService failed! resultMsg: " + resultMsg);
+            //LOG.info("CreateDetnetService failed! resultMsg: " + resultMsg);
             return RpcReturnUtil.returnErr(resultMsg.toString());
         }
         return RpcReturnUtil.returnSucess(null);
@@ -93,7 +98,7 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
                                                      String sourceNode, String destNode, Path path,
                                                      List<RelayNode> relayNodes) {
 
-        List<PathLink> links = new ArrayList<>();
+        List<PathLink> links = new ArrayList<PathLink>();
         Path segmentPath;
         String segIngressNode;
         String segEgressNode;
@@ -103,7 +108,7 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
             links.add(link);
             RelayNode relayNode = getRelayNodeUseLinkDest(link,relayNodes);
             if (relayNode != null) {
-                List<PathLink> tempLinks = new ArrayList<>(links);
+                List<PathLink> tempLinks = new ArrayList<PathLink>(links);
                 segmentPath = new PathBuilder().setPathLink(tempLinks).build();
                 linkNum = segmentPath.getPathLink().size();
                 segIngressNode = segmentPath.getPathLink().get(0).getLinkSource().getSourceNode();
@@ -114,7 +119,7 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
                 //links.add(link);
             }
         }
-        List<PathLink> tempPath = new ArrayList<>(links);
+        List<PathLink> tempPath = new ArrayList<PathLink>(links);
         segmentPath = new PathBuilder().setPathLink(tempPath).build();
         linkNum = segmentPath.getPathLink().size();
         segIngressNode = segmentPath.getPathLink().get(0).getLinkSource().getSourceNode();
@@ -178,35 +183,35 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
         switch (type) {
             case ProxyInstanceId:
                 if (serviceResource != null) {
-                    id = serviceResource.getProxyInstanceId();
+                    id = serviceResource.getProxyInstanceId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);
                 builder.setProxyInstanceId(id);
                 break;
             case MappingInstanceId:
                 if (serviceResource != null) {
-                    id = serviceResource.getMappingInstanceId();
+                    id = serviceResource.getMappingInstanceId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);
                 builder.setMappingInstanceId(id);
                 break;
             case ServiceInstanceId:
                 if (serviceResource != null) {
-                    id = serviceResource.getServiceInstanceId();
+                    id = serviceResource.getServiceInstanceId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);
                 builder.setServiceInstanceId(id);
                 break;
             case DetnetFlowId:
                 if (serviceResource != null) {
-                    id = serviceResource.getDetnetFlowId();
+                    id = serviceResource.getDetnetFlowId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);
                 builder.setDetnetFlowId(id);
                 break;
             case TransportTunnelId:
                 if (serviceResource != null) {
-                    id = serviceResource.getTransportTunnelId();
+                    id = serviceResource.getTransportTunnelId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);
                 builder.setTransportTunnelId(id);
@@ -242,8 +247,8 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
     private String processRelayNodeInstance(Integer domainId, Long streamId, String sourceNode, String ingressNode,
                                           String egressNode, Path segmentPath, List<ClientFlow> clientFlow,
                                           RelayNode relayNode) {
-        LOG.debug("processRelayNodeInstance: domain-" + domainId + "streamId-" + streamId + "sourceNode-" + sourceNode
-                + "seg-ingress-" + ingressNode + "seg-egress-" + egressNode + "relayNode-" + relayNode);
+        //LOG.debug("processRelayNodeInstance: domain-" + domainId + "streamId-" + streamId + "sourceNode-" + sourceNode
+              //  + "seg-ingress-" + ingressNode + "seg-egress-" + egressNode + "relayNode-" + relayNode);
         String result = "";
         SegmentPathKey positivePathKey = new SegmentPathKey(domainId,streamId,ingressNode,egressNode);
         ServiceInstance positiveInstance = buildServiceInstance(positivePathKey,segmentPath,false);
@@ -309,6 +314,6 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
     private Set<SegmentPathKey> getRelayNodeSegmentMap(String ingressNode) {
         Set<SegmentPathKey> segmentPathKeySet;
         segmentPathKeySet = relayNodeSegmentMap.get(ingressNode);
-        return segmentPathKeySet == null ? new ConcurrentSet<>() : segmentPathKeySet;
+        return segmentPathKeySet == null ? new ConcurrentSet<SegmentPathKey>() : segmentPathKeySet;
     }
 }

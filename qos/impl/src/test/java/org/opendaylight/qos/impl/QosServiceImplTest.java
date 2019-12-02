@@ -11,9 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +24,6 @@ import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.Delete
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.DeleteMappingTemplateInputBuilder;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.QueryMappingTemplateInput;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.QueryMappingTemplateInputBuilder;
-import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.api.rev180906.QueryMappingTemplateOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.PriorityTrafficClassMapping;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.priority.mapping.group.PriorityMapping;
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.priority.mapping.group.PriorityMappingBuilder;
@@ -38,6 +35,7 @@ import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.priority.t
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.priority.traffic._class.mapping.mapping.templates.pri._8021ps.Pri8021p;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 
+import org.opendaylight.yangtools.yang.common.Uint32;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +54,7 @@ public class QosServiceImplTest extends AbstractConcurrentDataBrokerTest {
     @Test
     public void qosServiceImplTest() {
 
-        List<PriorityMapping> priorityMappingList = new ArrayList<>();
+        List<PriorityMapping> priorityMappingList = new ArrayList<PriorityMapping>();
         priorityMappingList.add(getPriorityMapping((short) 0, 0, 0, 7));
         priorityMappingList.add(getPriorityMapping((short) 1, 1, 8, 15));
         priorityMappingList.add(getPriorityMapping((short) 2, 5, 40, 47));
@@ -79,25 +77,25 @@ public class QosServiceImplTest extends AbstractConcurrentDataBrokerTest {
         assertNotNull(mappingTemplates);
         Pri8021ps pri8021ps = mappingTemplates.getPri8021ps();
         assertEquals(8, pri8021ps.getPri8021p().size());
-        List<Long> expected1 = new ArrayList<>();
+        List<Long> expected1 = new ArrayList<Long>();
         for (long i = 0;i < 8;i++) {
             expected1.add(i);
         }
-        List<Long> actual1 = new ArrayList<>();
+        List<Long> actual1 = new ArrayList<Long>();
         for (Pri8021p pri8021p : pri8021ps.getPri8021p()) {
-            actual1.add(pri8021p.getValue8021p());
+            actual1.add(pri8021p.getValue8021p().longValue());
         }
         assertEquals(true, expected1.containsAll(actual1));
         assertEquals(true, actual1.containsAll(expected1));
 
         Ipv4Dscps ipv4Dscps = mappingTemplates.getIpv4Dscps();
-        List<Long> expected2 = new ArrayList<>();
+        List<Long> expected2 = new ArrayList<Long>();
         for (long i = 0;i < 64;i++) {
             expected2.add(i);
         }
-        List<Long> actual2 = new ArrayList<>();
+        List<Long> actual2 = new ArrayList<Long>();
         for (Ipv4Dscp ipv4Dscp : ipv4Dscps.getIpv4Dscp()) {
-            actual2.add(ipv4Dscp.getDscpValue());
+            actual2.add(ipv4Dscp.getDscpValue().longValue());
         }
         assertEquals(true, expected2.containsAll(actual2));
         assertEquals(true, actual2.containsAll(expected2));
@@ -140,12 +138,12 @@ public class QosServiceImplTest extends AbstractConcurrentDataBrokerTest {
 
 
     private PriorityMapping getPriorityMapping(short trafficClass, long pcpValue, long dscpLeft, long dscpRight) {
-        List<Long> dscpValues = new ArrayList<>();
+        List<Uint32> dscpValues = new ArrayList<Uint32>();
         for (long i = dscpLeft;i <= dscpRight;i++) {
-            dscpValues.add(i);
+            dscpValues.add(Uint32.valueOf(i));
         }
-        List<Long> pcpValues = new ArrayList<>();
-        pcpValues.add(pcpValue);
+        List<Uint32> pcpValues = new ArrayList<Uint32>();
+        pcpValues.add(Uint32.valueOf(pcpValue));
         return new PriorityMappingBuilder()
                 .setTrafficClass(trafficClass)
                 .setPcpValues(pcpValues)

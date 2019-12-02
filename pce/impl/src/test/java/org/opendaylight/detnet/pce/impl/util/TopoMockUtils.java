@@ -85,7 +85,7 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
 
     public static List<DetnetLink> buildLinkPair(String node, String port, String oppesitPort,
                                                String oppesiteNode,long metric) {
-        List<DetnetLink> list = new ArrayList<>();
+        List<DetnetLink> list = new ArrayList<DetnetLink>();
 
         list.add(buildLink(node, port, oppesitPort, oppesiteNode,metric));
         list.add(buildLink(oppesiteNode, oppesitPort, port, node,metric));
@@ -107,7 +107,7 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
     */
 
     public static List<DetnetLink> buildFourNodeTopo() throws ExecutionException, InterruptedException {
-        List<DetnetLink> links = new ArrayList<>();
+        List<DetnetLink> links = new ArrayList<DetnetLink>();
         links.addAll(TopoMockUtils.buildLinkPair("node1", "link12", "link21", "node2",10));
         links.addAll(TopoMockUtils.buildLinkPair("node2", "link24", "link42", "node4",10));
         links.addAll(TopoMockUtils.buildLinkPair("node1", "link13", "link31", "node3",10));
@@ -126,7 +126,7 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
  *      10        10
  */
     public static List<DetnetLink> getTopo6Node() {
-        List<DetnetLink> links = new ArrayList<>();
+        List<DetnetLink> links = new ArrayList<DetnetLink>();
 
         links.addAll(TopoMockUtils.buildLinkPair("node1", "link12", "link21", "node2", 10));
 
@@ -147,7 +147,7 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
 
     public static void buildNodeInOneDomain(boolean isNode2InDomain1, DataBroker dataBroker) {
         //domain 1,segment 1
-        List<String> nodeIdList = new ArrayList<>();
+        List<String> nodeIdList = new ArrayList<String>();
         nodeIdList.add("node1");
         if (isNode2InDomain1) {
             nodeIdList.add("node2");
@@ -156,7 +156,7 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
         nodeIdList.add("node4");
         nodeIdList.add("node5");
         nodeIdList.add("node6");
-        List<Segments> segments = new ArrayList<>();
+        List<Segments> segments = new ArrayList<Segments>();
         segments.add(new SegmentsBuilder().setSegmentId(1).build());
         for (String node : nodeIdList) {
             DetnetNode detnetNode = buildDetnetNodeInfo(node,segments);
@@ -175,7 +175,9 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
     private static List<org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology
             .detnet.topology.domains.Segments> trans(List<Segments> segments) {
         List<org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology
-                .detnet.topology.domains.Segments> segmentList = new ArrayList<>();
+                .detnet.topology.domains.Segments> segmentList =
+                new ArrayList<org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology
+                .detnet.topology.domains.Segments>();
         for (Segments segment : segments) {
             segmentList.add(new org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology
                     .detnet.topology.domains.SegmentsBuilder().setSegmentId(segment.getSegmentId()).build());
@@ -185,20 +187,20 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
 
     public static void buildNodeInTwoDomain(boolean isNode2InDomain2, DataBroker dataBroker) {
         //domain 1,segment 1,node1-6;domain 2, segment 2,node1-4,node6;
-        List<String> nodeIdList = new ArrayList<>();
+        List<String> nodeIdList = new ArrayList<String>();
         nodeIdList.add("node1");
         nodeIdList.add("node2");
         nodeIdList.add("node3");
         nodeIdList.add("node4");
         nodeIdList.add("node5");
         nodeIdList.add("node6");
-        List<Segments> segments = new ArrayList<>();
+        List<Segments> segments = new ArrayList<Segments>();
         segments.add(new SegmentsBuilder().setSegmentId(1).build());
         segments.add(new SegmentsBuilder().setSegmentId(2).build());
         for (String node : nodeIdList) {
             DetnetNode detnetNode;
             if (node.equals("node2") && !isNode2InDomain2) {
-                List<Segments> segmentList = new ArrayList<>();
+                List<Segments> segmentList = new ArrayList<Segments>();
                 segmentList.add(new SegmentsBuilder().setSegmentId(1).build());
                 detnetNode = buildDetnetNodeInfo(node,segmentList);
             } else {
@@ -226,7 +228,7 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     private static List<Ltps> buildLtps(String node) {
-        List<Ltps> ltpList = new ArrayList<>();
+        List<Ltps> ltpList = new ArrayList<Ltps>();
         if (node.equals("node1")) {
             ltpList.add(new LtpsBuilder().setTpId("link12").setTrafficClasses(buildTrafficClass()).build());
             ltpList.add(new LtpsBuilder().setTpId("link13").setTrafficClasses(buildTrafficClass()).build());
@@ -257,7 +259,7 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     private static List<TrafficClasses> buildTrafficClass() {
-        List<TrafficClasses> trafficClassList = new ArrayList<>();
+        List<TrafficClasses> trafficClassList = new ArrayList<TrafficClasses>();
         for (Short i = 0; i < 8; i++) {
             trafficClassList.add(new TrafficClassesBuilder()
                     .setTcIndex(i)
@@ -273,4 +275,5 @@ public class TopoMockUtils extends AbstractConcurrentDataBrokerTest {
                 .child(DetnetTopology.class, new DetnetTopologyKey(DEFAULT_TOPO))
                 .child(DetnetNode.class,new DetnetNodeKey(node));
     }
+
 }

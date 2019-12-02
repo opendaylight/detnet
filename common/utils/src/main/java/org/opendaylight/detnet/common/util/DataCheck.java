@@ -9,7 +9,9 @@ package org.opendaylight.detnet.common.util;
 
 public final class DataCheck {
 
-    private DataCheck() {}
+    private DataCheck() {
+
+    }
 
     public static CheckResult checkNotNull(Object... objs) {
         int index = 1;

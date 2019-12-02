@@ -87,7 +87,7 @@ public class DetnetServiceMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     public static List<PathLink> buildNode14PathLinks() throws ExecutionException, InterruptedException {
-        List<PathLink> links = new ArrayList<>();
+        List<PathLink> links = new ArrayList<PathLink>();
         links.add(new PathLinkBuilder(DetnetServiceMockUtils
                 .buildLink("11.11.11.11", "link12", "link21", "22.22.22.22",10)).build());
         links.add(new PathLinkBuilder(DetnetServiceMockUtils
@@ -96,7 +96,7 @@ public class DetnetServiceMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     public static List<PathLink> buildNode15PathLinks() throws ExecutionException, InterruptedException {
-        List<PathLink> links = new ArrayList<>();
+        List<PathLink> links = new ArrayList<PathLink>();
         links.add(new PathLinkBuilder(DetnetServiceMockUtils
                 .buildLink("11.11.11.11", "link13", "link31", "33.33.33.33",10)).build());
         links.add(new PathLinkBuilder(DetnetServiceMockUtils
@@ -105,7 +105,7 @@ public class DetnetServiceMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     public static List<DetnetPath> buildNode14DetnetPath() throws ExecutionException, InterruptedException {
-        List<DetnetPath> detnetPaths = new ArrayList<>();
+        List<DetnetPath> detnetPaths = new ArrayList<DetnetPath>();
         List<PathLink> links = buildNode14PathLinks();
         detnetPaths.add(new DetnetPathBuilder()
                 .setIngressNode("11.11.11.11")
@@ -118,7 +118,7 @@ public class DetnetServiceMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     public static List<DetnetPath> buildNode145DetnetPath() throws ExecutionException, InterruptedException {
-        List<DetnetPath> detnetPaths = new ArrayList<>();
+        List<DetnetPath> detnetPaths = new ArrayList<DetnetPath>();
         List<PathLink> links = buildNode14PathLinks();
         List<PathLink> links1 = buildNode15PathLinks();
         detnetPaths.add(new DetnetPathBuilder()
@@ -140,7 +140,7 @@ public class DetnetServiceMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     public static List<ClientFlow> buildClientFlow() {
-        List<ClientFlow> clientFlows = new ArrayList<>();
+        List<ClientFlow> clientFlows = new ArrayList<ClientFlow>();
         clientFlows.add(new ClientFlowBuilder()
                 .setClientFlowId(111L)
                 .setFlowType(new L3FlowIdentificationBuilder()
@@ -163,7 +163,7 @@ public class DetnetServiceMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     public static List<RelayNode> buildRelayNodes() {
-        List<RelayNode> relayNodes = new ArrayList<>();
+        List<RelayNode> relayNodes = new ArrayList<RelayNode>();
         relayNodes.add(new RelayNodeBuilder()
                 .setRelayNodeId("22.22.22.22")
                 .setInEncapsulation(DetnetEncapsulationType.Mpls)
@@ -178,7 +178,7 @@ public class DetnetServiceMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     public static List<RelayNode> buildRelayNodesForSeg() {
-        List<RelayNode> relayNodes = new ArrayList<>();
+        List<RelayNode> relayNodes = new ArrayList<RelayNode>();
         relayNodes.add(new RelayNodeBuilder()
                 .setRelayNodeId("33.33.33.33")
                 .setInEncapsulation(DetnetEncapsulationType.Mpls)
@@ -188,7 +188,7 @@ public class DetnetServiceMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     public static List<DetnetPath> buildNode135SinglePath() throws ExecutionException, InterruptedException {
-        List<DetnetPath> detnetPaths = new ArrayList<>();
+        List<DetnetPath> detnetPaths = new ArrayList<DetnetPath>();
         List<PathLink> links = buildNode15PathLinks();
         detnetPaths.add(new DetnetPathBuilder()
                 .setIngressNode("11.11.11.11")
@@ -201,7 +201,7 @@ public class DetnetServiceMockUtils extends AbstractConcurrentDataBrokerTest {
     }
 
     public static void writeDetnetTopology(DataBroker dataBroker) {
-        List<DetnetNode> nodes = new ArrayList<>();
+        List<DetnetNode> nodes = new ArrayList<DetnetNode>();
         nodes.add(buildNode("11.11.11.11","192.168.1.1/32","2001:db8:3c4d:11::/64"));
         nodes.add(buildNode("22.22.22.22","192.168.2.2/32","2001:db8:3c4d:12::/64"));
         nodes.add(buildNode("33.33.33.33","192.168.3.3/32","2001:db8:3c4d:13::/64"));

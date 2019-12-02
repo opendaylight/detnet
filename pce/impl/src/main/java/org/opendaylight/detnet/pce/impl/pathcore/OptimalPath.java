@@ -85,7 +85,7 @@ public class OptimalPath<V, E> implements ISpt<V, E> {
     }
 
     private Map<V, V> genDestNodeMap(List<V> destNodes) {
-        Map<V, V> destNodeMap = new HashMap<>();
+        Map<V, V> destNodeMap = new HashMap<V, V>();
         for (V node : destNodes) {
             destNodeMap.put(node, node);
         }
@@ -116,7 +116,7 @@ public class OptimalPath<V, E> implements ISpt<V, E> {
     }
 
     protected class SourceDataImpl implements ISourceData<V, E> {
-        protected V sourceNode;
+        //protected V sourceNode;
         protected Map<V, List<E>> tentIncomingEdgesMap;
         protected Map<V, Number> tentDistanceMap;
         protected Map<V, Number> tentDelayMap;
@@ -128,23 +128,23 @@ public class OptimalPath<V, E> implements ISpt<V, E> {
         protected LinkedList<V> distanceOrderList;
 
         public SourceDataImpl(V sourceNode) {
-            this.sourceNode = sourceNode;
+            //this.sourceNode = sourceNode;
 
-            tentIncomingEdgesMap = new HashMap<>();
-            tentDistanceMap = new HashMap<>();
-            tentDelayMap = new HashMap<>();
-            tentDistanceTree = new TreeMap<>(comparator);
+            tentIncomingEdgesMap = new HashMap<V, List<E>>();
+            tentDistanceMap = new HashMap<V, Number>();
+            tentDelayMap = new HashMap<V, Number>();
+            tentDistanceTree = new TreeMap<V, Number>(comparator);
 
-            pathDistanceMap = new HashMap<>();
+            pathDistanceMap = new HashMap<V, Number>();
             pathDistanceMap.put(sourceNode, 0);
 
-            pathDelayMap = new HashMap<>();
+            pathDelayMap = new HashMap<V, Number>();
             pathDelayMap.put(sourceNode,0);
 
-            pathIncomingEdgeMap = new HashMap<>();
+            pathIncomingEdgeMap = new HashMap<V, List<E>>();
             pathIncomingEdgeMap.put(sourceNode, null);
 
-            distanceOrderList = new LinkedList<>();
+            distanceOrderList = new LinkedList<V>();
             distanceOrderList.addLast(sourceNode);
         }
 
@@ -186,7 +186,7 @@ public class OptimalPath<V, E> implements ISpt<V, E> {
                 addTentDistance(neighborNode,
                         strategy.transEdgeMeasure(locNodeDistance.longValue(),incomingEdgeMeasure));
 
-                List<E> edgeList = new ArrayList<>();
+                List<E> edgeList = new ArrayList<E>();
                 edgeList.add(incomingEdge);
                 tentIncomingEdgesMap.put(neighborNode, edgeList);
             } else if (strategy.isCurNodeMoreOptimal(locNodeDistance.longValue(), incomingEdgeMeasure,

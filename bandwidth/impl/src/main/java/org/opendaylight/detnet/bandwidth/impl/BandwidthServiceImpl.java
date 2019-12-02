@@ -7,11 +7,11 @@
  */
 package org.opendaylight.detnet.bandwidth.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.sal.binding.api.RpcConsumerRegistry;
@@ -66,37 +66,40 @@ public class BandwidthServiceImpl implements DetnetBandwidthApiService {
     }
 
     @Override
-    public Future<RpcResult<ConfigE2eBandwidthOutput>> configE2eBandwidth(ConfigE2eBandwidthInput input) {
+    public ListenableFuture<RpcResult<ConfigE2eBandwidthOutput>> configE2eBandwidth(ConfigE2eBandwidthInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getBandwidth(), input.getTrafficClass(),
                 input.getPathLink())).isInputIllegal()) {
-            LOG.info("Config bandwidth input error!");
+            //LOG.info("Config bandwidth input error!");
             return RpcReturnUtil.returnErr("Input error:" + checkResult.getErrorCause());
         }
 
-        LOG.info("Config e2e service bandwidth.");
-        List<PathLink> successLinkList = new ArrayList<>();
+        //LOG.info("Config e2e service bandwidth.");
+        List<PathLink> successLinkList = new ArrayList<PathLink>();
         for (PathLink link : input.getPathLink()) {
-            LOG.info("Write bandwidth manager datastore, link:{}",link.getLinkId());
-            InstanceIdentifier<TrafficClasses> trafficClassesIID = getTrafficClassesIID(link, input.getTrafficClass());
+            //LOG.info("Write bandwidth manager datastore, link:{}",link.getLinkId());
+            InstanceIdentifier<TrafficClasses> trafficClassesIID = getTrafficClassesIID(link,
+                    input.getTrafficClass().shortValue());
             TrafficClasses trafficClasses = DataOperator.readData(dataBroker, trafficClassesIID);
-            long bandwidthToBeReserved = input.getBandwidth();
+            long bandwidthToBeReserved = input.getBandwidth().longValue();
             if (null != trafficClasses) {
-                bandwidthToBeReserved += trafficClasses.getReservedBandwidth();
+                bandwidthToBeReserved += trafficClasses.getReservedBandwidth().longValue();
             }
-            LOG.debug("Total bandwidth reserved for link:{} is：{}", link.getLinkId(), bandwidthToBeReserved);
+            //LOG.debug("Total bandwidth reserved for link:{} is：{}", link.getLinkId(), bandwidthToBeReserved);
             TrafficClasses newTrfficClasses = new TrafficClassesBuilder().setTcIndex(input.getTrafficClass())
                     .setReservedBandwidth(bandwidthToBeReserved).build();
 
-            LOG.info("Write topology link bandwidth datastore, link:{}",link.getLinkId());
+            //LOG.info("Write topology link bandwidth datastore, link:{}",link.getLinkId());
             InstanceIdentifier<DetnetLink> detnetLinkIID = getDetnetLinkIID(link, input.getTopologyId());
             DetnetLink detnetLink = DataOperator.readData(dataBroker, detnetLinkIID);
 
             DetnetLink newDetnetLink = new DetnetLinkBuilder(link)
-                    .setReservedDetnetBandwidth(detnetLink.getReservedDetnetBandwidth() + input.getBandwidth())
-                    .setAvailableDetnetBandwidth(detnetLink.getAvailableDetnetBandwidth() - input.getBandwidth())
+                    .setReservedDetnetBandwidth(detnetLink.getReservedDetnetBandwidth().longValue()
+                            + input.getBandwidth().longValue())
+                    .setAvailableDetnetBandwidth(detnetLink.getAvailableDetnetBandwidth().longValue()
+                            - input.getBandwidth().longValue())
                     .build();
-            LOG.debug("Write bandwidth to south, nodeId:{}", link.getLinkSource().getSourceNode());
+            //LOG.debug("Write bandwidth to south, nodeId:{}", link.getLinkSource().getSourceNode());
             WriteBandwidthToSouthInput writeBandwidthToSouthInput = new WriteBandwidthToSouthInputBuilder()
                     .setNodeId(link.getLinkSource().getSourceNode())
                     .setTpId(link.getLinkSource().getSourceTp())
@@ -108,7 +111,8 @@ public class BandwidthServiceImpl implements DetnetBandwidthApiService {
                 isWriteToSouthSuccess = detnetDriverApiService.writeBandwidthToSouth(writeBandwidthToSouthInput)
                         .get().isSuccessful();
             } catch (InterruptedException | ExecutionException e) {
-                LOG.info(Arrays.toString(e.getStackTrace()));
+                //LOG.info(Arrays.toString(e.getStackTrace()));
+                return RpcReturnUtil.returnErr("Config bandwidth failed!");
             }
 
             boolean isWriteBandwidthManagerSuccess = DataOperator.writeData(DataOperator.OperateType.PUT, dataBroker,
@@ -117,12 +121,12 @@ public class BandwidthServiceImpl implements DetnetBandwidthApiService {
                     detnetLinkIID, newDetnetLink);
 
             if (!isWriteBandwidthManagerSuccess || !isWriteTopologySuccess || !isWriteToSouthSuccess) {
-                LOG.debug("Config link {} bandwidth failed!", link.getLinkId());
-                deleteSucceedLinksBandwidth(input.getTopologyId(), successLinkList, input.getBandwidth(),
-                        input.getTrafficClass());
+                //LOG.debug("Config link {} bandwidth failed!", link.getLinkId());
+                deleteSucceedLinksBandwidth(input.getTopologyId(), successLinkList, input.getBandwidth().longValue(),
+                        input.getTrafficClass().shortValue());
                 if (isWriteBandwidthManagerSuccess) {
                     TrafficClasses resetTrafficClasses = new TrafficClassesBuilder(newTrfficClasses)
-                            .setReservedBandwidth(bandwidthToBeReserved - input.getBandwidth())
+                            .setReservedBandwidth(bandwidthToBeReserved - input.getBandwidth().longValue())
                             .build();
                     DataOperator.writeData(DataOperator.OperateType.PUT, dataBroker, trafficClassesIID,
                             resetTrafficClasses);
@@ -137,7 +141,7 @@ public class BandwidthServiceImpl implements DetnetBandwidthApiService {
             NotificationProvider.getInstance().notify(linkBandwidthChange);
 
         }
-        LOG.info("Config bandwidth success!");
+        //LOG.info("Config bandwidth success!");
         return RpcReturnUtil.returnSucess(new ConfigE2eBandwidthOutputBuilder().build());
     }
 
@@ -149,13 +153,15 @@ public class BandwidthServiceImpl implements DetnetBandwidthApiService {
                 .setBandwidth(bandwidth)
                 .setTrafficClass(trafficClass)
                 .build();
-        Future<RpcResult<DeleteE2eBandwidthOutput>> output = deleteE2eBandwidth(deleteE2eBandwidthInput);
+        ListenableFuture<RpcResult<DeleteE2eBandwidthOutput>> output = deleteE2eBandwidth(deleteE2eBandwidthInput);
         try {
             if (!output.get().isSuccessful()) {
-                LOG.info("Delete successLinkList bandwidth failed!");
+                //LOG.info("Delete successLinkList bandwidth failed!");
+                RpcReturnUtil.returnErr("Delete bandwidth failed!");
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
+            RpcReturnUtil.returnErr("Delete bandwidth failed!");
         }
     }
 
@@ -173,35 +179,39 @@ public class BandwidthServiceImpl implements DetnetBandwidthApiService {
     }
 
     @Override
-    public Future<RpcResult<DeleteE2eBandwidthOutput>> deleteE2eBandwidth(DeleteE2eBandwidthInput input) {
+    public ListenableFuture<RpcResult<DeleteE2eBandwidthOutput>> deleteE2eBandwidth(DeleteE2eBandwidthInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getBandwidth(), input.getTrafficClass(),
                 input.getPathLink())).isInputIllegal()) {
-            LOG.info("Delete bandwidth input error!");
+            //LOG.info("Delete bandwidth input error!");
             return RpcReturnUtil.returnErr("Input error:" + checkResult.getErrorCause());
         }
 
         boolean deleteAllLinkBandWidthSuccess = true;
         for (PathLink link : input.getPathLink()) {
-            LOG.info("Delete bandwidth datastore, link:{}", link.getLinkId());
-            InstanceIdentifier<TrafficClasses> trafficClassesIID = getTrafficClassesIID(link, input.getTrafficClass());
+            //LOG.info("Delete bandwidth datastore, link:{}", link.getLinkId());
+            InstanceIdentifier<TrafficClasses> trafficClassesIID = getTrafficClassesIID(link,
+                    input.getTrafficClass().shortValue());
             TrafficClasses trafficClasses = DataOperator.readData(dataBroker, trafficClassesIID);
             TrafficClasses newTrafficClasses = new TrafficClassesBuilder(trafficClasses)
-                    .setReservedBandwidth(trafficClasses.getReservedBandwidth() - input.getBandwidth())
+                    .setReservedBandwidth(trafficClasses.getReservedBandwidth().longValue()
+                            - input.getBandwidth().longValue())
                     .build();
 
-            LOG.info("Delete topology link bandwidth datasotre, link:{}", link.getLinkId());
+            //LOG.info("Delete topology link bandwidth datasotre, link:{}", link.getLinkId());
             InstanceIdentifier<DetnetLink> detnetLinkIID = getDetnetLinkIID(link, input.getTopologyId());
             DetnetLink detnetLink = DataOperator.readData(dataBroker, detnetLinkIID);
             DetnetLink newDetnetLink = new DetnetLinkBuilder(detnetLink)
-                    .setReservedDetnetBandwidth(detnetLink.getReservedDetnetBandwidth() - input.getBandwidth())
-                    .setAvailableDetnetBandwidth(detnetLink.getAvailableDetnetBandwidth() + input.getBandwidth())
+                    .setReservedDetnetBandwidth(detnetLink.getReservedDetnetBandwidth().longValue()
+                            - input.getBandwidth().longValue())
+                    .setAvailableDetnetBandwidth(detnetLink.getAvailableDetnetBandwidth().longValue()
+                            + input.getBandwidth().longValue())
                     .build();
 
             if (!DataOperator.writeData(DataOperator.OperateType.PUT, dataBroker, trafficClassesIID, newTrafficClasses)
                     || !DataOperator.writeData(DataOperator.OperateType.MERGE,
                     dataBroker, detnetLinkIID, newDetnetLink)) {
-                LOG.info("Delete bandwidth failed, link:{}", link.getLinkId());
+                //LOG.info("Delete bandwidth failed, link:{}", link.getLinkId());
                 deleteAllLinkBandWidthSuccess = false;
             }
 
@@ -213,11 +223,12 @@ public class BandwidthServiceImpl implements DetnetBandwidthApiService {
                     .build();
             try {
                 if (!detnetDriverApiService.writeBandwidthToSouth(writeBandwidthToSouthInput).get().isSuccessful()) {
-                    LOG.info("Delete bandwidth to south failed, link:{}", link.getLinkId());
+                    //LOG.info("Delete bandwidth to south failed, link:{}", link.getLinkId());
                     deleteAllLinkBandWidthSuccess = false;
                 }
             } catch (InterruptedException | ExecutionException e) {
-                LOG.info(Arrays.toString(e.getStackTrace()));
+                //LOG.info(Arrays.toString(e.getStackTrace()));
+                RpcReturnUtil.returnErr("Delete bandwidth failed!");
             }
 
             LinkBandwidthChange linkBandwidthChange = new LinkBandwidthChangeBuilder()
@@ -234,7 +245,7 @@ public class BandwidthServiceImpl implements DetnetBandwidthApiService {
     }
 
     @Override
-    public Future<RpcResult<QueryBandwidthParameterOutput>> queryBandwidthParameter(
+    public ListenableFuture<RpcResult<QueryBandwidthParameterOutput>> queryBandwidthParameter(
             QueryBandwidthParameterInput input) {
 
         InstanceIdentifier<BandwidthConfig> bandwidthConfigIID = InstanceIdentifier

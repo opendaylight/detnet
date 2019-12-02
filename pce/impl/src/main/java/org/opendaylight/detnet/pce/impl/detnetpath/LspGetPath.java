@@ -25,7 +25,7 @@ public final class LspGetPath {
             Map<String, List<GraphLink>> incomingLinkMap, String srcNode,
             String destNode) {
 
-        LinkedList<GraphLink> path = new LinkedList<>();
+        LinkedList<GraphLink> path = new LinkedList<GraphLink>();
 
         if (incomingLinkMap == null
                 || incomingLinkMap.isEmpty()

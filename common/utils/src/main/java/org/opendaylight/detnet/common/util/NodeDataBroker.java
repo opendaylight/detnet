@@ -24,7 +24,7 @@ import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NodeDataBroker {
+public final class NodeDataBroker {
 
     private static final Logger LOG = LoggerFactory.getLogger(NodeDataBroker.class);
     public static final InstanceIdentifier<Topology> NETCONF_TOPO_IID = InstanceIdentifier
@@ -33,7 +33,9 @@ public class NodeDataBroker {
     private static NodeDataBroker instance = new NodeDataBroker();
     private MountPointService mountPointService;
 
-    private NodeDataBroker() {}
+    private NodeDataBroker() {
+
+    }
 
     public void setMountPointService(MountPointService mountPointService) {
         this.mountPointService = mountPointService;

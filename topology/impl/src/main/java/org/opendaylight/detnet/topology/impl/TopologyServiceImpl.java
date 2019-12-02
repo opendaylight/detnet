@@ -7,10 +7,11 @@
  */
 package org.opendaylight.detnet.topology.impl;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
-
 import org.opendaylight.detnet.common.util.RpcReturnUtil;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.AddDetnetLinkInput;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.AddDetnetLinkOutput;
@@ -52,6 +53,7 @@ import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.DeleteSegm
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.DeleteSegmentsFromDomainOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.DeleteSegmentsFromDomainOutputBuilder;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.DetnetTopologyApiService;
+import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.LoadTopologyIdInput;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.LoadTopologyIdOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.LoadTopologyIdOutputBuilder;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.QueryDomainTopologyInput;
@@ -96,7 +98,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<AddDetnetLinkOutput>> addDetnetLink(AddDetnetLinkInput input) {
+    public ListenableFuture<RpcResult<AddDetnetLinkOutput>> addDetnetLink(AddDetnetLinkInput input) {
         AddDetnetLinkOutputBuilder configBuilder = new AddDetnetLinkOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getLinkBandwidth()
                 || null == input.getLinkId() || null == input.getLinkSource().getSourceNode()
@@ -117,7 +119,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
                 .build();
         DetnetLinkBuilder detnetLinkBuilder = new DetnetLinkBuilder();
         detnetLinkBuilder.setLinkId(input.getLinkId());
-        detnetLinkBuilder.setKey(new DetnetLinkKey(input.getLinkId()))
+        detnetLinkBuilder.withKey(new DetnetLinkKey(input.getLinkId()))
                 .setLinkSource(linkSource)
                 .setLinkDest(linkDest)
                 .setMaximumReservableBandwidth(input.getMaximumReservableBandwidth())
@@ -146,7 +148,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<ConfigDetnetNodeLtpOutput>> configDetnetNodeLtp(ConfigDetnetNodeLtpInput input) {
+    public ListenableFuture<RpcResult<ConfigDetnetNodeLtpOutput>> configDetnetNodeLtp(ConfigDetnetNodeLtpInput input) {
         ConfigDetnetNodeLtpOutputBuilder configDetnetNodeLtpOutputBuilder = new ConfigDetnetNodeLtpOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getNodeId()
                 || null == input.getTpId()) {
@@ -157,7 +159,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
 
         LtpsBuilder ltpsBuilder = new LtpsBuilder();
         ltpsBuilder.setTpId(input.getTpId());
-        ltpsBuilder.setKey(new LtpsKey(input.getTpId()));
+        ltpsBuilder.withKey(new LtpsKey(input.getTpId()));
         if (null != input.getIfName()) {
             ltpsBuilder.setIfName(input.getIfName());
         }
@@ -187,7 +189,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public  Future<RpcResult<ConfigDetnetNodeTrafficClassOutput>> configDetnetNodeTrafficClass(
+    public  ListenableFuture<RpcResult<ConfigDetnetNodeTrafficClassOutput>> configDetnetNodeTrafficClass(
             ConfigDetnetNodeTrafficClassInput input) {
         ConfigDetnetNodeTrafficClassOutputBuilder configBuilder = new ConfigDetnetNodeTrafficClassOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getNodeId() || null == input.getTpId()
@@ -198,7 +200,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
 
         TrafficClassesBuilder trafficClassesBuilder = new TrafficClassesBuilder();
         trafficClassesBuilder.setTcIndex(input.getTcIndex())
-                .setKey(new TrafficClassesKey(input.getTcIndex()));
+                .withKey(new TrafficClassesKey(input.getTcIndex()));
         if (null != input.getMaximumQueueDelay()) {
             trafficClassesBuilder.setMaximumQueueDelay(input.getMaximumQueueDelay());
         }
@@ -207,7 +209,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
         }
 
         if (!topologyDataManager.writeDetnetNodeTrafficClass(input.getTopologyId(), input.getNodeId(),
-                input.getTpId(), input.getTcIndex(), trafficClassesBuilder.build())) {
+                input.getTpId(), Short.valueOf(input.getTcIndex().byteValue()), trafficClassesBuilder.build())) {
             configBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false, "write node to datastore failed!"));
             return RpcResultBuilder.success(configBuilder.build()).buildFuture();
         }
@@ -216,7 +218,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<ConfigDetnetNodeOutput>> configDetnetNode(ConfigDetnetNodeInput input) {
+    public ListenableFuture<RpcResult<ConfigDetnetNodeOutput>> configDetnetNode(ConfigDetnetNodeInput input) {
         ConfigDetnetNodeOutputBuilder configBuilder = new ConfigDetnetNodeOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getNodeId()) {
             configBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false, "Illegal argument!"));
@@ -225,7 +227,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
 
         DetnetNodeBuilder detnetNodeBuilder = new DetnetNodeBuilder();
         detnetNodeBuilder.setNodeId(input.getNodeId());
-        detnetNodeBuilder.setKey(new DetnetNodeKey(input.getNodeId()));
+        detnetNodeBuilder.withKey(new DetnetNodeKey(input.getNodeId()));
         if (null != input.getName()) {
             detnetNodeBuilder.setName(input.getName());
         }
@@ -258,7 +260,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<DeleteDetnetNodeLtpOutput>> deleteDetnetNodeLtp(
+    public ListenableFuture<RpcResult<DeleteDetnetNodeLtpOutput>> deleteDetnetNodeLtp(
             DeleteDetnetNodeLtpInput input) {
         DeleteDetnetNodeLtpOutputBuilder deleteBuilder = new DeleteDetnetNodeLtpOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getNodeId() || null == input.getTpId()) {
@@ -281,7 +283,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<AddNodesToSegmentOutput>> addNodesToSegment(AddNodesToSegmentInput input) {
+    public ListenableFuture<RpcResult<AddNodesToSegmentOutput>> addNodesToSegment(AddNodesToSegmentInput input) {
         LOG.info("addNodesToSegment input {}", input);
         AddNodesToSegmentOutputBuilder addBuilder = new AddNodesToSegmentOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getSegmentId()
@@ -304,7 +306,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
                         segmentsList.add(segments.build());
                     }
                 } else {
-                    List<Segments> newSegmentsList = new ArrayList<>();
+                    List<Segments> newSegmentsList = new ArrayList<Segments>();
                     newSegmentsList.add(segments.build());
                     detnetNodeBuilder.setSegments(newSegmentsList);
                 }
@@ -322,22 +324,24 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<QueryDomainTopologyOutput>> queryDomainTopology(QueryDomainTopologyInput input) {
+    public ListenableFuture<RpcResult<QueryDomainTopologyOutput>> queryDomainTopology(QueryDomainTopologyInput input) {
         LOG.info("queryDomainTopology input {}", input);
         if (null == input || null == input.getTopologyId() || null == input.getDomainId()) {
-            return RpcReturnUtil.returnErr("Illegal argument!");
+            return Futures.immediateFuture(RpcResultBuilder.success(new QueryDomainTopologyOutputBuilder()).build());
         }
         QueryDomainTopologyOutputBuilder queryBuilder = new QueryDomainTopologyOutputBuilder();
-        Domains domains = topologyDataManager.getDomain(input.getTopologyId(), input.getDomainId());
+        Domains domains = topologyDataManager.getDomain(input.getTopologyId(), input.getDomainId().intValue());
         if (null == domains) {
             return RpcResultBuilder.success(queryBuilder.build()).buildFuture();
         }
         List<DetnetNode> detnetNodesList = topologyDataManager.getDomainNodes(input.getTopologyId(), domains);
         List<DetnetLink> detnetLinksList = topologyDataManager.getDomainLinks(input.getTopologyId(), domains);
         List<org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.query.domain.topology.output.DetnetNode>
-                nodesList = new ArrayList<>();
+                nodesList = new ArrayList<org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.query.domain
+                .topology.output.DetnetNode>();
         List<org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.query.domain.topology.output.DetnetLink>
-                linksList = new ArrayList<>();
+                linksList = new ArrayList<org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.query.domain
+                .topology.output.DetnetLink>();
         for (DetnetNode
                 node : detnetNodesList) {
             org.opendaylight.yang.gen.v1.urn.detnet.topology.api.rev180904.query.domain.topology.output.DetnetNode
@@ -357,7 +361,8 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<ConfigSegmentsToDomainOutput>> configSegmentsToDomain(ConfigSegmentsToDomainInput input) {
+    public ListenableFuture<RpcResult<ConfigSegmentsToDomainOutput>> configSegmentsToDomain(
+            ConfigSegmentsToDomainInput input) {
         LOG.info("configSegmentsToDomain input {}", input);
         ConfigSegmentsToDomainOutputBuilder configBuilder = new ConfigSegmentsToDomainOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getDomainId()
@@ -365,9 +370,16 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
             configBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false, "Illegal argument!"));
             return RpcResultBuilder.success(configBuilder.build()).buildFuture();
         }
-        Domains domain = topologyDataManager.getDomain(input.getTopologyId(), input.getDomainId());
+        Domains domain = topologyDataManager.getDomain(input.getTopologyId(), input.getDomainId().intValue());
         List<org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology.detnet
-                .topology.domains.Segments> newSegmentsList = new ArrayList<>();
+                .topology.domains.Segments> newSegmentsList = new ArrayList<org.opendaylight.yang.gen.v1.urn.detnet
+                .topology.rev180823.detnet.network.topology.detnet
+                .topology.domains.Segments>();
+
+        List<Integer> segmentList = new ArrayList<Integer>();
+        for (int i = 0; i < input.getSegments().size(); i++) {
+            segmentList.add(input.getSegments().get(i).intValue());
+        }
         if (null != domain) {
             //LOG.info("domain != NULL {}", domain);
             List<org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology.detnet
@@ -376,14 +388,15 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
 
             if (null != segmentsList) {
                 //LOG.info("segmentsList  != NULL {}", segmentsList);
-                segmentsList = topologyDataManager.processDomainSegments(segmentsList, input.getSegments());
+                segmentsList = topologyDataManager.processDomainSegments(segmentsList, segmentList);
                 domainsBuilder.setSegments(segmentsList);
             } else {
                 //LOG.info("segmentsList == NULL {}");
-                newSegmentsList = topologyDataManager.processDomainSegments(newSegmentsList, input.getSegments());
+                newSegmentsList = topologyDataManager.processDomainSegments(newSegmentsList, segmentList);
                 domainsBuilder.setSegments(newSegmentsList);
             }
-            if (!topologyDataManager.writeDomain(input.getTopologyId(), input.getDomainId(), domainsBuilder.build())) {
+            if (!topologyDataManager.writeDomain(input.getTopologyId(), input.getDomainId().intValue(),
+                    domainsBuilder.build())) {
                 configBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(
                         false, "add segments to domain " + input.getDomainId() + " failed!"));
                 return RpcResultBuilder.success(configBuilder.build()).buildFuture();
@@ -391,11 +404,12 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
         } else {
             //LOG.info("domain == NULL {}");
             DomainsBuilder domainsBuilder = new DomainsBuilder();
-            newSegmentsList = topologyDataManager.processDomainSegments(newSegmentsList, input.getSegments());
+            newSegmentsList = topologyDataManager.processDomainSegments(newSegmentsList, segmentList);
             domainsBuilder.setSegments(newSegmentsList)
                     .setDomainId(input.getDomainId())
-                    .setKey(new DomainsKey(input.getDomainId()));
-            if (!topologyDataManager.writeDomain(input.getTopologyId(), input.getDomainId(), domainsBuilder.build())) {
+                    .withKey(new DomainsKey(input.getDomainId()));
+            if (!topologyDataManager.writeDomain(input.getTopologyId(), input.getDomainId().intValue(),
+                    domainsBuilder.build())) {
                 configBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(
                         false, "add segments to domain " + input.getDomainId() + " failed!"));
                 return RpcResultBuilder.success(configBuilder.build()).buildFuture();
@@ -406,7 +420,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<DeleteDetnetNodeTrafficClassOutput>> deleteDetnetNodeTrafficClass(
+    public ListenableFuture<RpcResult<DeleteDetnetNodeTrafficClassOutput>> deleteDetnetNodeTrafficClass(
             DeleteDetnetNodeTrafficClassInput input) {
         DeleteDetnetNodeTrafficClassOutputBuilder deleteBuilder = new
                 DeleteDetnetNodeTrafficClassOutputBuilder();
@@ -417,13 +431,15 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
         }
 
         if (null == topologyDataManager.getDetnetNodeTrafficClass(
-                input.getTopologyId(), input.getNodeId(), input.getTpId(), input.getTcIndex())) {
+                input.getTopologyId(), input.getNodeId(), input.getTpId(),
+                Short.valueOf(input.getTcIndex().byteValue()))) {
             deleteBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false, "trafic class is not exist!"));
             return RpcResultBuilder.success(deleteBuilder.build()).buildFuture();
         }
 
         if (!topologyDataManager.deleteDetnetNodeTrafficClass(
-                input.getTopologyId(), input.getNodeId(), input.getTpId(), input.getTcIndex())) {
+                input.getTopologyId(), input.getNodeId(), input.getTpId(),
+                Short.valueOf(input.getTcIndex().byteValue()))) {
             deleteBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false,
                     "delete trafic class form datastore failed!"));
             return RpcResultBuilder.success(deleteBuilder.build()).buildFuture();
@@ -433,7 +449,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<DeleteSegmentsFromDomainOutput>> deleteSegmentsFromDomain(
+    public ListenableFuture<RpcResult<DeleteSegmentsFromDomainOutput>> deleteSegmentsFromDomain(
             DeleteSegmentsFromDomainInput input) {
         DeleteSegmentsFromDomainOutputBuilder deleteBuilder = new DeleteSegmentsFromDomainOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getDomainId()
@@ -441,18 +457,21 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
             deleteBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false, "Illegal argument!"));
             return RpcResultBuilder.success(deleteBuilder.build()).buildFuture();
         }
-        if (null == topologyDataManager.getSegment(input.getTopologyId(), input.getDomainId(), input.getSegmentId())) {
+        if (null == topologyDataManager.getSegment(input.getTopologyId(), input.getDomainId().intValue(),
+                input.getSegmentId().intValue())) {
             deleteBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false, "segment is not exist!"));
             return RpcResultBuilder.success(deleteBuilder.build()).buildFuture();
         }
-        if (topologyDataManager.getDomain(input.getTopologyId(), input.getDomainId()).getSegments().size() == 1) {
-            if (!topologyDataManager.deleteDomain(input.getTopologyId(), input.getDomainId())) {
+        if (topologyDataManager.getDomain(input.getTopologyId(),
+                input.getDomainId().intValue()).getSegments().size() == 1) {
+            if (!topologyDataManager.deleteDomain(input.getTopologyId(), input.getDomainId().intValue())) {
                 deleteBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(
                         false, "delete segment form datastore failed!"));
                 return RpcResultBuilder.success(deleteBuilder.build()).buildFuture();
             }
         } else {
-            if (!topologyDataManager.deleteSegment(input.getTopologyId(), input.getDomainId(), input.getSegmentId())) {
+            if (!topologyDataManager.deleteSegment(input.getTopologyId(), input.getDomainId().intValue(),
+                    input.getSegmentId().intValue())) {
                 deleteBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(
                         false, "delete segment form datastore failed!"));
                 return RpcResultBuilder.success(deleteBuilder.build()).buildFuture();
@@ -464,7 +483,8 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<DeleteNodesFromSegmentOutput>> deleteNodesFromSegment(DeleteNodesFromSegmentInput input) {
+    public ListenableFuture<RpcResult<DeleteNodesFromSegmentOutput>> deleteNodesFromSegment(
+            DeleteNodesFromSegmentInput input) {
         DeleteNodesFromSegmentOutputBuilder deleteBuilder = new DeleteNodesFromSegmentOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getSegmentId()
                 || null == input.getDetnetNodes()) {
@@ -503,7 +523,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<DeleteDetnetNodeOutput>> deleteDetnetNode(DeleteDetnetNodeInput input) {
+    public ListenableFuture<RpcResult<DeleteDetnetNodeOutput>> deleteDetnetNode(DeleteDetnetNodeInput input) {
         DeleteDetnetNodeOutputBuilder deleteBuilder = new DeleteDetnetNodeOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getNodeId()) {
             deleteBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false, "Illegal argument!"));
@@ -525,7 +545,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<DeleteDetnetLinkOutput>> deleteDetnetLink(DeleteDetnetLinkInput input) {
+    public ListenableFuture<RpcResult<DeleteDetnetLinkOutput>> deleteDetnetLink(DeleteDetnetLinkInput input) {
         DeleteDetnetLinkOutputBuilder deleteBuilder = new DeleteDetnetLinkOutputBuilder();
         if (null == input || null == input.getTopologyId() || null == input.getLinkId()) {
             deleteBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false, "Illegal argument!"));
@@ -547,9 +567,9 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<LoadTopologyIdOutput>> loadTopologyId() {
+    public ListenableFuture<RpcResult<LoadTopologyIdOutput>> loadTopologyId(LoadTopologyIdInput input) {
         LoadTopologyIdOutputBuilder loadTopologyIdOutputBuilder = new LoadTopologyIdOutputBuilder();
-        List<Topology> topologyList = new ArrayList<>();
+        List<Topology> topologyList = new ArrayList<Topology>();
         DetnetNetworkTopology topology = topologyDataManager.getDetnetNetworkTopology();
         LOG.info("topology {}", topology);
         if (null == topology) {
@@ -569,7 +589,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
     }
 
     @Override
-    public Future<RpcResult<AddTopologyIdOutput>> addTopologyId(AddTopologyIdInput input) {
+    public ListenableFuture<RpcResult<AddTopologyIdOutput>> addTopologyId(AddTopologyIdInput input) {
         AddTopologyIdOutputBuilder addBuilder = new AddTopologyIdOutputBuilder();
         if (null == input || null == input.getTopologyId()) {
             addBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(false, "Illegal argument!"));
@@ -581,7 +601,7 @@ public class TopologyServiceImpl implements DetnetTopologyApiService {
         }
         DetnetTopology topology = new DetnetTopologyBuilder()
                 .setTopologyId(input.getTopologyId())
-                .setKey(new DetnetTopologyKey(input.getTopologyId()))
+                .withKey(new DetnetTopologyKey(input.getTopologyId()))
                 .build();
         if (!topologyDataManager.writeTopologyId(input.getTopologyId(), topology)) {
             addBuilder.setConfigureResult(RpcReturnUtil.getConfigResult(

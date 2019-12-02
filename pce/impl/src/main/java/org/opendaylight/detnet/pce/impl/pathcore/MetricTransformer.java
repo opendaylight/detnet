@@ -16,7 +16,7 @@ import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.GraphLink;
 
 public class MetricTransformer implements ITransformer<GraphLink> {
     protected static final long LINK_METRIC_STEP = 0x1;
-    List<GraphLink> contrainedLinkList = new ArrayList<>();
+    List<GraphLink> contrainedLinkList = new ArrayList<GraphLink>();
 
     public MetricTransformer(List<GraphLink> contrainedLinks) {
         if (contrainedLinks != null && !contrainedLinks.isEmpty()) {

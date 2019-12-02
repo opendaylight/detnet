@@ -43,7 +43,7 @@ public class ContrainedOptimalPath extends OptimalPath<String,GraphLink> {
         calcSpt();
         Map<String, List<GraphLink>> incomingMap = getIncomingEdgeMap();
         if (!incomingMap.containsKey(tailNode)) {
-            return new LinkedList<>();
+            return new LinkedList<GraphLink>();
         }
         return LspGetPath.getPath(incomingMap, sourceNode, tailNode);
     }
@@ -87,11 +87,11 @@ public class ContrainedOptimalPath extends OptimalPath<String,GraphLink> {
                 return;
             }
             long lessDelay = maxDelay;
-            List<GraphLink> temList = new LinkedList<>();
+            List<GraphLink> temList = new LinkedList<GraphLink>();
             List<GraphLink> edgeList = tentIncomingEdgesMap.get(neighborNode);
             if (edgeList.contains(incomingEdge)) {
                 for (GraphLink edge : edgeList) {
-                    long incomingEdgeDelay = ComUtility.getLinkDelay(edge,trafficClass).longValue();
+                    long incomingEdgeDelay = ComUtility.getLinkDelay(edge,trafficClass);
                     String preNode = edge.getSource().getSourceNode();
 
                     long preLocNodeDelay = pathDelayMap.get(preNode).longValue();
@@ -122,7 +122,7 @@ public class ContrainedOptimalPath extends OptimalPath<String,GraphLink> {
                 return true;
             }
             long locNodeDelay = pathDelayMap.get(localNode).longValue();
-            Long incomingDelay = ComUtility.getLinkDelay(incomingEdge,trafficClass).longValue();
+            Long incomingDelay = ComUtility.getLinkDelay(incomingEdge,trafficClass);
             return locNodeDelay + incomingDelay <= maxDelay;
         }
 
@@ -130,7 +130,7 @@ public class ContrainedOptimalPath extends OptimalPath<String,GraphLink> {
             if (bandwidth == 0) {
                 return true;
             }
-            return incomingEdge.getAvailableDetnetBandwidth() >= bandwidth;
+            return incomingEdge.getAvailableDetnetBandwidth().shortValue() >= bandwidth;
         }
 
         private boolean isLinkExcluded(GraphLink link) {

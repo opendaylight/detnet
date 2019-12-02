@@ -36,16 +36,16 @@ public class ServiceInstance {
     private String ingressNodeId;
     private Short trafficClass;
     private PathConstraint pathConstraint;
-    private LinkedHashMap<PathUnifyKey, SinglePath> paths = new LinkedHashMap<>();
-    private LinkedList<DetnetLink> allPaths = new LinkedList<>();
+    private LinkedHashMap<PathUnifyKey, SinglePath> paths = new LinkedHashMap<PathUnifyKey, SinglePath>();
+    private LinkedList<DetnetLink> allPaths = new LinkedList<DetnetLink>();
     private boolean pathUpdateFlag = false;
 
     public ServiceInstance(CreatePathInput input) {
-        this.streamId = input.getStreamId();
+        this.streamId = input.getStreamId().longValue();
         this.ingressNodeId = input.getIngressNodeId();
         this.topoId = input.getTopoId() == null ? TopologyProvider.DEFAULT_TOPO_ID_STRING : input.getTopoId();
-        this.domainId = input.getDomainId();
-        this.trafficClass = input.getTrafficClass();
+        this.domainId = input.getDomainId().intValue();
+        this.trafficClass = input.getTrafficClass().shortValue();
         this.pathConstraint = input.getPathConstraint();
     }
 
@@ -116,7 +116,7 @@ public class ServiceInstance {
     }
 
     public List<SinglePath> getAllPath() {
-        List<SinglePath> singlePaths = new ArrayList<>();
+        List<SinglePath> singlePaths = new ArrayList<SinglePath>();
         if (!paths.isEmpty()) {
             singlePaths.addAll(paths.values());
         }
@@ -152,7 +152,7 @@ public class ServiceInstance {
     }
 
     public void refreshPath() {
-        LOG.info("ServiceInstance path refresh: domainId-" + getDomainId() + ", streamId-" + getStreamId());
+        //LOG.info("ServiceInstance path refresh: domainId-" + getDomainId() + ", streamId-" + getStreamId());
         allPaths.clear();
         for (SinglePath singlePath : paths.values()) {
             singlePath.refreshPath(allPaths);
@@ -177,12 +177,13 @@ public class ServiceInstance {
                 .setEgress(buildEgresses())
                 .build();
 
-        LOG.info("notifyPathChange: domainId -" + getDomainId() + "streamId -" + getStreamId() + " path change! ");
+       // LOG.info("notifyPathChange: domainId -" + getDomainId() + "streamId -" + getStreamId() + " path change! ");
         NotificationProvider.getInstance().notify(notification);
     }
 
     public List<org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.Egress> buildEgresses() {
-        List<org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.Egress> egressList = new ArrayList<>();
+        List<org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.Egress> egressList =
+                new ArrayList<org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.Egress>();
         for (SinglePath singlePath : paths.values()) {
             egressList.add(new EgressBuilder()
                     .setEgressNodeId(singlePath.getEgressNodeId())

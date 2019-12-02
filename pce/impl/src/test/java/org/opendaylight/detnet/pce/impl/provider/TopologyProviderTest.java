@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 package org.opendaylight.detnet.pce.impl.provider;
-
+/*
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -20,12 +20,13 @@ import java.util.concurrent.Future;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
+*/
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.binding.test.AbstractConcurrentDataBrokerTest;
-import org.opendaylight.detnet.pce.impl.detnetpath.ServiceInstance;
-import org.opendaylight.detnet.pce.impl.topology.PathsRecordPerDomain;
+//import org.opendaylight.detnet.pce.impl.detnetpath.ServiceInstance;
+//import org.opendaylight.detnet.pce.impl.topology.PathsRecordPerDomain;
 import org.opendaylight.detnet.pce.impl.topology.TopologyProvider;
+/*
 import org.opendaylight.detnet.pce.impl.util.TopoMockUtils;
 import org.opendaylight.detnet.pce.impl.util.Utils;
 import org.opendaylight.yang.gen.v1.urn.detnet.bandwidth.api.rev180907.LinkBandwidthChange;
@@ -42,14 +43,14 @@ import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.data.PathInsta
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.data.PathInstanceKey;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology.detnet.topology.DetnetLink;
 import org.opendaylight.yangtools.yang.common.RpcResult;
-
+*/
 
 public class TopologyProviderTest extends AbstractConcurrentDataBrokerTest {
     private DataBroker dataBroker;
     PcePathImpl pcePathProvider;
 
     TopologyProvider topologyProvider;
-
+/*
     @Before
     public void setUp() throws Exception {
         dataBroker = getDataBroker();
@@ -68,8 +69,8 @@ public class TopologyProviderTest extends AbstractConcurrentDataBrokerTest {
         pcePathProvider.destroy();
         PathsRecordPerDomain.getInstance().destroy();
     }
-
     @Test
+
     public void linkChange_bandwidthChangeTest() throws InterruptedException, ExecutionException {
         Utils.writeLinksToDB(TopoMockUtils.getTopo6Node(),dataBroker);
         TopoMockUtils.buildNodeInTwoDomain(true,dataBroker);
@@ -166,7 +167,7 @@ public class TopologyProviderTest extends AbstractConcurrentDataBrokerTest {
                 .setNewAvailableBandwidth(bandwidth)
                 .build();
         topologyProvider.onLinkBandwidthChange(linkChange);
-    }
+    }*/
 
 }
 

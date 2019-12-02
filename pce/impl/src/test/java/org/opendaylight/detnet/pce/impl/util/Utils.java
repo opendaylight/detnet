@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
+import org.opendaylight.controller.md.sal.binding.test.AbstractConcurrentDataBrokerTest;
 import org.opendaylight.detnet.common.util.DataOperator;
 import org.opendaylight.detnet.pce.impl.provider.PcePathImpl;
 import org.opendaylight.detnet.pce.impl.topology.TopologyProvider;
@@ -37,7 +38,7 @@ import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.opendaylight.yangtools.yang.common.RpcResult;
 
-public class Utils {
+public class Utils extends AbstractConcurrentDataBrokerTest {
     public static void checkPath(List<PathLink> actualPath, String node1, String node2, String node3) {
         assertEquals(2, actualPath.size());
         assertEquals(actualPath.get(0).getLinkSource().getSourceNode(), node1);
@@ -104,20 +105,20 @@ public class Utils {
     }
 
     public static List<Egress> build1EgressInfo(String nodeId1) {
-        List<Egress> egressList = new ArrayList<>();
+        List<Egress> egressList = new ArrayList<Egress>();
         egressList.add(new EgressBuilder().setEgressNodeId(nodeId1).build());
         return egressList;
     }
 
     public static List<Egress> build2EgressInfo(String nodeId1, String nodeId2) {
-        List<Egress> egressList = new ArrayList<>();
+        List<Egress> egressList = new ArrayList<Egress>();
         egressList.add(new EgressBuilder().setEgressNodeId(nodeId1).build());
         egressList.add(new EgressBuilder().setEgressNodeId(nodeId2).build());
         return egressList;
     }
 
     public static List<Egress> build3EgressInfo(String nodeId1, String nodeId2, String nodeId3) {
-        List<Egress> bferList = new ArrayList<>();
+        List<Egress> bferList = new ArrayList<Egress>();
         bferList.add(new EgressBuilder().setEgressNodeId(nodeId1).build());
         bferList.add(new EgressBuilder().setEgressNodeId(nodeId2).build());
         bferList.add(new EgressBuilder().setEgressNodeId(nodeId3).build());

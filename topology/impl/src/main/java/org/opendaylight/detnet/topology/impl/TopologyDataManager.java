@@ -143,7 +143,7 @@ public class TopologyDataManager {
     }
 
     public List<DetnetNode> getDomainNodes(String topologyId, Domains domains) {
-        List<DetnetNode> detnetNodesList = new ArrayList<>();
+        List<DetnetNode> detnetNodesList = new ArrayList<DetnetNode>();
         DetnetTopology detnetTopology = getDetnetTopology(topologyId);
         if (null == detnetTopology) {
             LOG.error("queryDomainTopology rpc detnet-Topology is not exist!");

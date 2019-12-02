@@ -10,12 +10,10 @@ package org.opendaylight.detnet.e2eservice.impl;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
@@ -143,13 +141,13 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
     }
 
     @Override
-    public Future<RpcResult<ConfigE2eServiceOutput>> configE2eService(ConfigE2eServiceInput input) {
+    public ListenableFuture<RpcResult<ConfigE2eServiceOutput>> configE2eService(ConfigE2eServiceInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getTopologyId(), input.getDomainId(),
                 input.getStreamId(), input.getFlowType(), input.getInterval(),
                 input.getMaxPacketsPerInterval(), input.getMaxPayloadSize(), input.getListeners(),
                 input.getSourceNode(), input.getSourceTp())).isInputIllegal()) {
-            LOG.info("Config e2e service input error:" + checkResult.getErrorCause());
+            //LOG.info("Config e2e service input error:" + checkResult.getErrorCause());
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Config e2e service input error.");
             return RpcReturnUtil.returnSucess(new ConfigE2eServiceOutputBuilder()
@@ -163,7 +161,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Check default qos template used.");
+        //LOG.info("Check default qos template used.");
         String templateName = checkQosMappingTemplate();
         if (null == templateName) {
             ConfigureResult configureResult = RpcReturnUtil
@@ -172,7 +170,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Calculate bandwidth required based on traffic specification.");
+        //LOG.info("Calculate bandwidth required based on traffic specification.");
         long bandwidthRequired = calculateE2eServiceBandwidth(input);
         if (-1 == bandwidthRequired) {
             ConfigureResult configureResult = RpcReturnUtil
@@ -181,7 +179,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Calculate max latency based on user to network requirements.");
+        //LOG.info("Calculate max latency based on user to network requirements.");
         long maxLatency = calculateE2eServiceMaxLatency(input);
         if (0 == maxLatency) {
             ConfigureResult configureResult = RpcReturnUtil
@@ -190,7 +188,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Calculate traffic class based on priority and qos template.");
+        //LOG.info("Calculate traffic class based on priority and qos template.");
         short trafficClass = calculateE2eServiceTrafficClass(input, templateName);
         if (-1 == trafficClass) {
             ConfigureResult configureResult = RpcReturnUtil
@@ -199,7 +197,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Check whether traffic class queue is detnet.");
+        //LOG.info("Check whether traffic class queue is detnet.");
         boolean isTrafficClassDetnet = isTrafficClassQueueDetnet(trafficClass);
         if (!isTrafficClassDetnet) {
             ConfigureResult configureResult = RpcReturnUtil
@@ -208,7 +206,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Calculate e2e service path.");
+        //LOG.info("Calculate e2e service path.");
         CreatePathOutput createPathOutput = createE2eServicePath(input, trafficClass, bandwidthRequired, maxLatency);
         if (null == createPathOutput || null == createPathOutput.getEgress()
                 || createPathOutput.getEgress().isEmpty()) {
@@ -218,7 +216,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Get (vlan, mac) from pool, save to datastore and southbound.");
+        //LOG.info("Get (vlan, mac) from pool, save to datastore and southbound.");
         if (!getVlanMacAddressPairFromPool(input)) {
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Get (vlanId, macAddress) pair failed.");
@@ -226,7 +224,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Check netconf of nodes in path connected!");
+        //LOG.info("Check netconf of nodes in path connected!");
         String netconfNotConnected = checkNetconfConnected(createPathOutput);
         if (!netconfNotConnected.equals("")) {
             ConfigureResult configureResult = RpcReturnUtil
@@ -236,7 +234,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Distribute e2e service bandwidth and gate.");
+        //LOG.info("Distribute e2e service bandwidth and gate.");
         if (!distributeBandwidthAndGate(createPathOutput, input.getTopologyId(), bandwidthRequired, trafficClass)) {
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Distribute bandwidth and gate failed.");
@@ -246,9 +244,9 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
         }
 
         long clientFlowId = getClientFlowId();
-        LOG.info("Split path segment, distribute tsn and detnet service.");
+        //LOG.info("Split path segment, distribute tsn and detnet service.");
         for (org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.Egress egress : createPathOutput.getEgress()) {
-            LOG.info("Distribute tsn and detnet for egress node: {}", egress.getEgressNodeId());
+            //LOG.info("Distribute tsn and detnet for egress node: {}", egress.getEgressNodeId());
             if (!splitPathAndDsitributeTsnDetnetService(egress.getPath().getPathLink(), input, clientFlowId)) {
                 ConfigureResult configureResult = RpcReturnUtil
                         .getConfigResult(false, "Distribute tsn service and detnet service failed.");
@@ -257,11 +255,9 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                         .setConfigureResult(configureResult).build());
             }
         }
-        LOG.info("Distribute tsn service and detnet service success.");
+        //LOG.info("Distribute tsn service and detnet service success.");
 
-        //TODO 不成功，之前配成功的要回退
-
-        LOG.info("Save e2e service to datastore.");
+        //LOG.info("Save e2e service to datastore.");
         if (!saveE2eServiceToDataStore(input, trafficClass, bandwidthRequired)) {
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Save e2e service to datastore failed.");
@@ -269,7 +265,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        LOG.info("Config e2e service of streamId:{} success.", input.getStreamId());
+        //LOG.info("Config e2e service of streamId:{} success.", input.getStreamId());
         ConfigureResult configureResult = RpcReturnUtil.getConfigResult(true, "");
         return RpcReturnUtil.returnSucess(new ConfigE2eServiceOutputBuilder()
                 .setConfigureResult(configureResult).build());
@@ -281,7 +277,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .child(E2eService.class, new E2eServiceKey(
                         input.getDomainId(), input.getStreamId(), input.getTopologyId()));
         if (null != DataOperator.readData(dataBroker, e2eServiceIID)) {
-            LOG.info("E2e service of streamId:{} already exist.", input.getStreamId());
+            //LOG.info("E2e service of streamId:{} already exist.", input.getStreamId());
             return false;
         }
         return true;
@@ -290,7 +286,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
     private CreatePathOutput createE2eServicePath(ConfigE2eServiceInput input, short trafficClass,
                                                   long bandwidthRequired, long maxDelay) {
         PceApiService pceApiService = rpcConsumerRegistry.getRpcService(PceApiService.class);
-        List<Egress> egressList = new ArrayList<>();
+        List<Egress> egressList = new ArrayList<Egress>();
         for (Listeners listener : input.getListeners()) {
             Egress egress = new EgressBuilder().setEgressNodeId(listener.getDestNode()).build();
             egressList.add(egress);
@@ -312,14 +308,14 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
             RpcResult<CreatePathOutput> createPathOutputRpcResult = pceApiService.createPath(createPathInput).get();
             //TODO
             if (createPathOutputRpcResult.isSuccessful()) {
-                LOG.info("Create e2e service path success, path : {}", createPathOutputRpcResult.getResult());
+                //LOG.info("Create e2e service path success, path : {}", createPathOutputRpcResult.getResult());
                 return createPathOutputRpcResult.getResult();
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(e.getMessage());
+            //LOG.info(e.getMessage());
 
         }
-        LOG.info("Calculate e2e service path failed.");
+        //LOG.info("Calculate e2e service path failed.");
         return null;
     }
 
@@ -334,39 +330,37 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .build();
         try {
             if (!pceApiService.removePath(removePathInput).get().isSuccessful()) {
-                LOG.info("Remove pce path failed.");
+                //LOG.info("Remove pce path failed.");
+                RpcReturnUtil.returnErr(null);
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
+            RpcReturnUtil.returnErr(null);
         }
     }
 
     private long calculateE2eServiceBandwidth(ConfigE2eServiceInput input) {
-        if (0 == input.getInterval() || 0 == input.getMaxPacketsPerInterval() || 0 == input.getMaxPayloadSize()) {
+        if (0 == input.getInterval().longValue() || 0 == input.getMaxPacketsPerInterval().longValue()
+                || 0 == input.getMaxPayloadSize().longValue()) {
             LOG.info("Input traffic specification error.");
             return -1;
         }
         final long perFrameOverHead = 56;
-        long interval = input.getInterval();
-        long maxPacketsPerInterval = input.getMaxPacketsPerInterval();
-        long maxPayloadSize = input.getMaxPayloadSize();
+        long interval = input.getInterval().longValue();
+        long maxPacketsPerInterval = input.getMaxPacketsPerInterval().longValue();
+        long maxPayloadSize = input.getMaxPayloadSize().longValue();
         float maxPacketsPerSecond = 1000 / interval * maxPacketsPerInterval;
         long bandwidthRequired = (long) ((maxPayloadSize + perFrameOverHead) * maxPacketsPerSecond * 8 / 1000 + 1);
-        LOG.info("Bandwidth required of e2e service: {}", bandwidthRequired);
+        //LOG.info("Bandwidth required of e2e service: {}", bandwidthRequired);
         return bandwidthRequired;
     }
 
     private long calculateE2eServiceMaxLatency(ConfigE2eServiceInput input) {
-        long maxLatency = input.getMaxLatency();
+        long maxLatency = input.getMaxLatency().longValue();
         for (Listeners listeners : input.getListeners()) {
-            if (0 != listeners.getMaxLatency() && listeners.getMaxLatency() < maxLatency) {
-                maxLatency = listeners.getMaxLatency();
+            if (0 != listeners.getMaxLatency().longValue() && listeners.getMaxLatency().longValue() < maxLatency) {
+                maxLatency = listeners.getMaxLatency().longValue();
             }
-        }
-        if (0 == maxLatency) {
-            LOG.info("Input latency not specified correctly.");
-        } else {
-            LOG.info("Max latency of e2e service: {}", maxLatency);
         }
         return maxLatency;
     }
@@ -379,24 +373,24 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .child(MappingTemplates.class, new MappingTemplatesKey(templateName));
         if (input.getFlowType() instanceof L2FlowIdentfication) {
             L2FlowIdentfication l2NativeFlow = (L2FlowIdentfication) input.getFlowType();
-            priorityValue = l2NativeFlow.getPcp();
+            priorityValue = l2NativeFlow.getPcp().longValue();
             InstanceIdentifier<Pri8021p> pri8021pIID = mappingTemplatesIID
                     .child(Pri8021ps.class)
                     .child(Pri8021p.class, new Pri8021pKey(priorityValue));
             Pri8021p pri8021p = DataOperator.readData(dataBroker, pri8021pIID, LogicalDatastoreType.CONFIGURATION);
             if (null != pri8021p) {
-                LOG.info("Traffic class of e2e service: {}", pri8021p.getTrafficClass());
-                return pri8021p.getTrafficClass();
+                //LOG.info("Traffic class of e2e service: {}", pri8021p.getTrafficClass());
+                return pri8021p.getTrafficClass().shortValue();
             }
         } else if (input.getFlowType() instanceof L3FlowIdentification) {
             L3FlowIdentification l3NativeFlow = (L3FlowIdentification) input.getFlowType();
             IpFlowType ipFlowType = l3NativeFlow.getIpFlowType();
             if (ipFlowType instanceof Ipv4) {
                 Ipv4 ipv4NativeFlow = (Ipv4)ipFlowType;
-                priorityValue = ipv4NativeFlow.getDscp();
+                priorityValue = ipv4NativeFlow.getDscp().longValue();
             } else {
                 Ipv6 ipv6NativeFlow = (Ipv6)ipFlowType;
-                priorityValue = ipv6NativeFlow.getTrafficClass();
+                priorityValue = ipv6NativeFlow.getTrafficClass().shortValue();
             }
             InstanceIdentifier<Ipv4Dscp> ipv4DscpIID = mappingTemplatesIID
                     .child(Ipv4Dscps.class)
@@ -404,11 +398,11 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
             Ipv4Dscp ipv4Dscp = DataOperator.readData(dataBroker, ipv4DscpIID, LogicalDatastoreType.CONFIGURATION);
             if (null != ipv4Dscp) {
                 LOG.info("Traffic class of e2e service: {}", ipv4Dscp.getTrafficClass());
-                return ipv4Dscp.getTrafficClass();
+                return ipv4Dscp.getTrafficClass().shortValue();
 
             }
         }
-        LOG.info("Calculate e2e service traffic class failed.");
+        //LOG.info("Calculate e2e service traffic class failed.");
         return -1;
     }
 
@@ -417,7 +411,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .create(QosMappingTemplate.class);
         QosMappingTemplate qosMappingTemplate = DataOperator.readData(dataBroker, qosTemplateIID);
         if (null == qosMappingTemplate) {
-            LOG.info("Default qos template not specified.");
+            //LOG.info("Default qos template not specified.");
             return null;
         }
         String templateName = qosMappingTemplate.getTemplateName();
@@ -426,10 +420,10 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .child(MappingTemplates.class, new MappingTemplatesKey(templateName));
         MappingTemplates mappingTemplates = DataOperator.readData(dataBroker, mappingTemplatesIID);
         if (null == mappingTemplates) {
-            LOG.info("Mapping template of the specified template name not exist.");
+            //LOG.info("Mapping template of the specified template name not exist.");
             return null;
         }
-        LOG.info("Check specified qos mapping template OK, templateName: {}", templateName);
+        //LOG.info("Check specified qos mapping template OK, templateName: {}", templateName);
         return templateName;
     }
 
@@ -439,10 +433,10 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .child(TrafficClasses.class, new TrafficClassesKey(trfficClass));
         TrafficClasses trafficClasses = DataOperator.readData(dataBroker, trafficClassesIID);
         if (null != trafficClasses && trafficClasses.isDetnet()) {
-            LOG.info("The queue of trafficClass is detnet.");
+            ////LOG.info("The queue of trafficClass is detnet.");
             return true;
         }
-        LOG.info("The queue of trafficClass is not detnet.");
+        //LOG.info("The queue of trafficClass is not detnet.");
         return false;
     }
 
@@ -456,25 +450,26 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .setGroupMacAddress("01:00:5e:00:01:00")
                     .build();
             if (!DataOperator.writeData(DataOperator.OperateType.PUT, dataBroker, resourcesPoolIID, resourcesPool)) {
-                LOG.info("");
+                //LOG.info("");
+                RpcReturnUtil.returnErr(null);
             }
         }
         InstanceIdentifier<E2eService> e2eServiceIID = InstanceIdentifier.create(E2eServiceManager.class)
                 .child(E2eService.class, new E2eServiceKey(input.getDomainId(),
                         input.getStreamId(), input.getTopologyId()));
         E2eService e2eService = new E2eServiceBuilder()
-                .setKey(new E2eServiceKey(input.getDomainId(), input.getStreamId(), input.getTopologyId()))
+                .withKey(new E2eServiceKey(input.getDomainId(), input.getStreamId(), input.getTopologyId()))
                 .setVlanId(resourcesPool.getVlanId())
                 .setGroupMacAddress(resourcesPool.getGroupMacAddress())
                 .build();
         if (null == e2eService || !DataOperator.writeData(DataOperator.OperateType.MERGE,
                 dataBroker, e2eServiceIID, e2eService)) {
-            LOG.info("Get vlanId macAddress for e2e service failed.");
+            //LOG.info("Get vlanId macAddress for e2e service failed.");
             return false;
         }
         ResourcesPool newVlanMacAddress = vlanMacAddressIncrease(resourcesPool);
         DataOperator.writeData(DataOperator.OperateType.PUT, dataBroker, resourcesPoolIID, newVlanMacAddress);
-        LOG.info("(VlanId,macAddress) for e2e service: {}.", resourcesPool);
+        //LOG.info("(VlanId,macAddress) for e2e service: {}.", resourcesPool);
         return true;
     }
 
@@ -501,7 +496,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
     }
 
     private String checkNetconfConnected(CreatePathOutput output) {
-        Set<String> nodeIdSet = new HashSet<>();
+        Set<String> nodeIdSet = new HashSet<String>();
         List<PathLink> pathLinkList = getPathLinkList(output.getEgress());
         StringBuilder netconfNotConnected = new StringBuilder();
         for (PathLink pathLink : pathLinkList) {
@@ -540,13 +535,13 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .setTrafficClass(trafficClass)
                 .build();
         try {
-            LOG.info("Distribute bandwidth, input: {}", configE2eBandwidthInput);
+            //LOG.info("Distribute bandwidth, input: {}", configE2eBandwidthInput);
             if (!bandwidthApiService.configE2eBandwidth(configE2eBandwidthInput).get().isSuccessful()) {
-                LOG.info("Config e2e service bandwidth failed.");
+                //LOG.info("Config e2e service bandwidth failed.");
                 return false;
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
         DetnetGateApiService gateApiService = rpcConsumerRegistry.getRpcService(DetnetGateApiService.class);
         ConfigE2eGateInput configE2eGateInput = new ConfigE2eGateInputBuilder()
@@ -556,22 +551,22 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .setTrafficClass(trafficClass)
                 .build();
         try {
-            LOG.info("Distribute gate, input: {}", configE2eGateInput);
+            //LOG.info("Distribute gate, input: {}", configE2eGateInput);
             if (!gateApiService.configE2eGate(configE2eGateInput).get().isSuccessful()) {
-                LOG.info("Config e2e service gate failed.");
+                //LOG.info("Config e2e service gate failed.");
                 return false;
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
-        LOG.info("Config e2e service bandwidth and gate success.");
+        ///LOG.info("Config e2e service bandwidth and gate success.");
         return true;
     }
 
     public boolean splitPathAndDsitributeTsnDetnetService(List<PathLink> pathLinks, ConfigE2eServiceInput input,
                                                            long clientFlowId) {
-        List<PathLink> pathLinkList = new ArrayList<>();
-        List<RelayNode> relayNodeList = new ArrayList<>();
+        List<PathLink> pathLinkList = new ArrayList<PathLink>();
+        List<RelayNode> relayNodeList = new ArrayList<RelayNode>();
         boolean isTsnSegment = false;
         boolean isDetnetSegment = false;
         int index = 0;
@@ -591,7 +586,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
             DetnetNodeType sourceNodeType = getNodeTypeInDomain(sourceNode, sourceInTp, sourceOutTp, input);
             DetnetNodeType destNodeType = getNodeTypeInDomain(destNode, destInTp, destOutTp, input);
             if (null == sourceNodeType || null == destNodeType) {
-                LOG.info("Node type in domain not specified.");
+                //LOG.info("Node type in domain not specified.");
                 return false;
             }
             pathLinkList.add(pathLink);
@@ -600,21 +595,21 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 DetnetEncapsulationType sourceOutEncap = getEncapsulationType(sourceNode, sourceOutTp, input);
                 if (sourceOutEncap.equals(DetnetEncapsulationType.Tsn)) {
                     isTsnSegment = true;
-                    LOG.info("First pathlink in tsn segment: {}.", pathLink.getLinkId());
+                    //LOG.info("First pathlink in tsn segment: {}.", pathLink.getLinkId());
                 } else {
                     isDetnetSegment = true;
-                    LOG.info("First pathlink in detnet segment: {}", pathLink.getLinkId());
+                    //LOG.info("First pathlink in detnet segment: {}", pathLink.getLinkId());
                 }
             }
 
             if (sourceNodeType.equals(DetnetNodeType.Edge) && destNodeType.equals(DetnetNodeType.Bridge)) {
                 isTsnSegment = true;
-                LOG.info("First pathlink in tsn segment: {}.", pathLink.getLinkId());
+                //LOG.info("First pathlink in tsn segment: {}.", pathLink.getLinkId());
             }
             if (isTsnSegment && destNodeType.equals(DetnetNodeType.Edge)) {
                 isTsnSegment = false;
-                LOG.info("Last pathlink in tsn segment: {}.", pathLink.getLinkId());
-                LOG.info("Pathlink list of tsn segment: {}", pathLinkList);
+                //LOG.info("Last pathlink in tsn segment: {}.", pathLink.getLinkId());
+                //LOG.info("Pathlink list of tsn segment: {}", pathLinkList);
                 if (!distributeTsnService(pathLinkList, input)) {
                     return false;
                 }
@@ -625,16 +620,16 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
             if (sourceNodeType.equals(DetnetNodeType.Edge) && (destNodeType.equals(DetnetNodeType.Relay)
                     || destNodeType.equals(DetnetNodeType.Transit))) {
                 isDetnetSegment = true;
-                LOG.info("First pathlink in detnet segment: {}", pathLink.getLinkId());
+                //LOG.info("First pathlink in detnet segment: {}", pathLink.getLinkId());
             }
             if (sourceNodeType.equals(DetnetNodeType.Relay)) {
                 String outTp = pathLink.getLinkSource().getSourceTp();
                 DetnetEncapsulationType outEncapsulation = getEncapsulationType(sourceNode, outTp, input);
                 String inTp = pathLinkList.get(pathLinkList.size() - 2).getLinkDest().getDestTp();
                 DetnetEncapsulationType inEncapsulation = getEncapsulationType(sourceNode, inTp, input);
-                LOG.info("Relay node: {}, inTp:{}, outTp:{}", sourceNode, inTp, outTp);
+                //LOG.info("Relay node: {}, inTp:{}, outTp:{}", sourceNode, inTp, outTp);
                 RelayNode relayNode = new RelayNodeBuilder()
-                        .setKey(new RelayNodeKey(sourceNode))
+                        .withKey(new RelayNodeKey(sourceNode))
                         .setRelayNodeId(sourceNode)
                         .setInEncapsulation(inEncapsulation)
                         .setOutEncapsulation(outEncapsulation)
@@ -643,8 +638,8 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
             }
             if (isDetnetSegment && destNodeType.equals(DetnetNodeType.Edge)) {
                 isDetnetSegment = false;
-                LOG.info("Last pathlink in detnet segment: {}.", pathLink.getLinkId());
-                LOG.info("Pathlink list of detnet segment: {}", pathLinkList);
+                //LOG.info("Last pathlink in detnet segment: {}.", pathLink.getLinkId());
+                //LOG.info("Pathlink list of detnet segment: {}", pathLinkList);
                 if (!distributeDetnetService(pathLinkList, relayNodeList, input, clientFlowId)) {
                     return false;
                 }
@@ -662,7 +657,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .child(Ltps.class, new LtpsKey(tpId));
         Ltps ltps = DataOperator.readData(dataBroker, ltpsIID);
         if (null == ltps) {
-            LOG.info("Get ltp encapsulation failed.");
+            //LOG.info("Get ltp encapsulation failed.");
             return null;
         }
         return ltps.getDetnetEncapsulationType();
@@ -706,12 +701,12 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .child(E2eService.class, new E2eServiceKey(
                         input.getDomainId(), input.getStreamId(), input.getTopologyId()));
         E2eService e2eService = DataOperator.readData(dataBroker, e2eServiceIID);
-        List<TsnForwardingItems> forwardingItemsList = new ArrayList<>();
+        List<TsnForwardingItems> forwardingItemsList = new ArrayList<TsnForwardingItems>();
         for (PathLink pathLink : pathLinkList) {
             String sourceNode = pathLink.getLinkSource().getSourceNode();
             String sourceTp = pathLink.getLinkSource().getSourceTp();
             TsnForwardingItems forwardingItems = new TsnForwardingItemsBuilder()
-                    .setKey(new TsnForwardingItemsKey(sourceNode, sourceTp))
+                    .withKey(new TsnForwardingItemsKey(sourceNode, sourceTp))
                     .setNodeId(sourceNode)
                     .setOutPort(sourceTp)
                     .build();
@@ -722,23 +717,23 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .setVlanId(e2eService.getVlanId())
                 .setGroupMacAddress(e2eService.getGroupMacAddress())
                 .build();
-        LOG.info("Config tsn service input: {}", configTsnServiceInput);
+        //LOG.info("Config tsn service input: {}", configTsnServiceInput);
         DetnetTsnServiceApiService tsnServiceApiService = rpcConsumerRegistry.getRpcService(
                 DetnetTsnServiceApiService.class);
         try {
             if (!tsnServiceApiService.configTsnService(configTsnServiceInput).get().isSuccessful()) {
-                LOG.info("Distribute tsn service failed.");
+                //LOG.info("Distribute tsn service failed.");
                 return  false;
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            ///LOG.info(Arrays.toString(e.getStackTrace()));
         }
         return true;
     }
 
     private long getClientFlowId() {
         InstanceIdentifier<ResourcesPool> resourcesPoolIID = InstanceIdentifier.create(ResourcesPool.class);
-        long clientFlowId = DataOperator.readData(dataBroker, resourcesPoolIID).getClientFlowId();
+        long clientFlowId = DataOperator.readData(dataBroker, resourcesPoolIID).getClientFlowId().longValue();
         ResourcesPool resourcesPool = new ResourcesPoolBuilder()
                 .setClientFlowId(clientFlowId + 1)
                 .build();
@@ -750,22 +745,22 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                                             ConfigE2eServiceInput input, long clientFlowId) {
 
         ClientFlow clientFlow = new ClientFlowBuilder()
-                .setKey(new ClientFlowKey(clientFlowId))
+                .withKey(new ClientFlowKey(clientFlowId))
                 .setClientFlowId(clientFlowId)
                 .setFlowType(input.getFlowType())
                 .build();
-        List<ClientFlow> clientFlowList = new ArrayList<>();
+        List<ClientFlow> clientFlowList = new ArrayList<ClientFlow>();
         clientFlowList.add(clientFlow);
 
         String ingressNode = pathLinkList.get(0).getLinkSource().getSourceNode();
         String egressNode = pathLinkList.get(pathLinkList.size() - 1).getLinkDest().getDestNode();
         DetnetPath detnetPath = new DetnetPathBuilder()
-                .setKey(new DetnetPathKey(egressNode, ingressNode))
+                .withKey(new DetnetPathKey(egressNode, ingressNode))
                 .setIngressNode(ingressNode)
                 .setEgressNode(egressNode)
                 .setPath(new PathBuilder().setPathLink(pathLinkList).build())
                 .build();
-        List<DetnetPath> detnetPathList = new ArrayList<>();
+        List<DetnetPath> detnetPathList = new ArrayList<DetnetPath>();
         detnetPathList.add(detnetPath);
 
         CreateDetnetServiceInput createDetnetServiceInput = new CreateDetnetServiceInputBuilder()
@@ -775,16 +770,16 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .setDetnetPath(detnetPathList)
                 .setRelayNode(relayNodeList)
                 .build();
-        LOG.info("Config detnet service input: {}", createDetnetServiceInput);
+        //LOG.info("Config detnet service input: {}", createDetnetServiceInput);
         DetnetServiceApiService detnetServiceApiService = rpcConsumerRegistry.getRpcService(
                 DetnetServiceApiService.class);
         try {
             if (!detnetServiceApiService.createDetnetService(createDetnetServiceInput).get().isSuccessful()) {
-                LOG.info("Distribute service failed.");
+                //LOG.info("Distribute service failed.");
                 return false;
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
         return true;
     }
@@ -799,7 +794,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .setBandwidthRequired(bandwidthRequired)
                 .build();
         if (!DataOperator.writeData(DataOperator.OperateType.MERGE, dataBroker, e2eServiceIID, e2eService)) {
-            LOG.info("Save e2e service to datastore failed.");
+            //LOG.info("Save e2e service to datastore failed.");
             return false;
         }
         return true;
@@ -812,10 +807,10 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
     }
 
     @Override
-    public Future<RpcResult<DeleteE2eServiceOutput>> deleteE2eService(DeleteE2eServiceInput input) {
+    public ListenableFuture<RpcResult<DeleteE2eServiceOutput>> deleteE2eService(DeleteE2eServiceInput input) {
         ConfigureResult configureResult = null;
         if (null == input.getTopologyId() || null == input.getDomainId() || null == input.getStreamId()) {
-            LOG.info("Delete e2e service input error.");
+            //LOG.info("Delete e2e service input error.");
             configureResult = RpcReturnUtil.getConfigResult(false, "Delete e2e service input error.");
             return RpcReturnUtil.returnSucess(
                     new DeleteE2eServiceOutputBuilder().setConfigureResult(configureResult).build());
@@ -826,7 +821,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                         input.getDomainId(), input.getStreamId(), input.getTopologyId()));
         E2eService e2eService = DataOperator.readData(dataBroker, e2eServiceIID);
         if (null == e2eService) {
-            LOG.info("E2e service of streamId:{} not exist.", input.getStreamId());
+            //LOG.info("E2e service of streamId:{} not exist.", input.getStreamId());
             configureResult = RpcReturnUtil.getConfigResult(false, "E2e service not exist.");
             return RpcReturnUtil.returnSucess(
                     new DeleteE2eServiceOutputBuilder().setConfigureResult(configureResult).build());
@@ -841,23 +836,23 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
             QueryPathOutput queryPathOutput = pceApiService.queryPath(queryPathInput).get().getResult();
             List<PathLink> pathLinkList = getPathLinkList(queryPathOutput.getEgress());
             if (!deleteE2eServiceBandwidth(e2eService, pathLinkList)) {
-                LOG.info("Delete e2e bandwidth failed.");
+                //LOG.info("Delete e2e bandwidth failed.");
                 configureResult = RpcReturnUtil.getConfigResult(false, "Delete e2e bandwidth failed.");
             }
             if (!deleteE2eServiceGate(e2eService, pathLinkList)) {
-                LOG.info("Delete e2e gate failed.");
+                //LOG.info("Delete e2e gate failed.");
                 configureResult = RpcReturnUtil.getConfigResult(false, "Delete e2e gate failed.");
             }
             if (!deleteE2eTsnService(e2eService, pathLinkList)) {
-                LOG.info("Delete e2e tsn service failed.");
+                //LOG.info("Delete e2e tsn service failed.");
                 configureResult = RpcReturnUtil.getConfigResult(false, "Delete e2e tsn service failed.");
             }
             if (!deleteDetnetService(e2eService)) {
-                LOG.info("Delete e2e detnet service failed.");
+                //LOG.info("Delete e2e detnet service failed.");
                 configureResult = RpcReturnUtil.getConfigResult(false, "Delete e2e detnet service failed.");
             }
             if (!DataOperator.writeData(DataOperator.OperateType.DELETE, dataBroker, e2eServiceIID, null)) {
-                LOG.info("Delete e2e service from datastore failed.");
+                //LOG.info("Delete e2e service from datastore failed.");
                 configureResult = RpcReturnUtil.getConfigResult(false, "Delete e2e service from datastore failed.");
             }
 
@@ -869,15 +864,15 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .build();
             RemovePathOutput removePathOutput = pceApiService.removePath(removePathInput).get().getResult();
             if (null != removePathOutput.getEgress() && 0 != removePathOutput.getEgress().size()) {
-                LOG.info("Delete e2e service path failed.");
+                //LOG.info("Delete e2e service path failed.");
                 configureResult = RpcReturnUtil.getConfigResult(false, "Delete e2e service path failed.");
             }
 
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
         if (null == configureResult) {
-            LOG.info("Delete e2e service of streamId:{} success.", input.getStreamId());
+            //LOG.info("Delete e2e service of streamId:{} success.", input.getStreamId());
             configureResult = RpcReturnUtil.getConfigResult(true, "");
         }
         return RpcReturnUtil.returnSucess(
@@ -896,7 +891,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
         try {
             return bandwidthService.deleteE2eBandwidth(deleteBandwidthInput).get().isSuccessful();
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
         return false;
     }
@@ -912,13 +907,13 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
         try {
             return detnetGateApiService.deleteE2eGate(deleteE2eGateInput).get().isSuccessful();
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
         return false;
     }
 
     private boolean deleteE2eTsnService(E2eService e2eService, List<PathLink> pathLinkList) {
-        List<String> tsnNodes = new ArrayList<>();
+        List<String> tsnNodes = new ArrayList<String>();
         for (PathLink pathLink : pathLinkList) {
             tsnNodes.add(pathLink.getLinkSource().getSourceNode());
         }
@@ -931,7 +926,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
         try {
             return tsnApiService.deleteTsnService(deleteTsnServiceInput).get().isSuccessful();
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
         return false;
     }
@@ -945,14 +940,14 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
         try {
             return detnetApiService.deleteDetnetService(deleteDetnetServiceInput).get().isSuccessful();
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
         return false;
     }
 
     private List<PathLink> getPathLinkList(List<org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.Egress>
                                                    egressList) {
-        List<PathLink> pathLinkList = new ArrayList<>();
+        List<PathLink> pathLinkList = new ArrayList<PathLink>();
         for (org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.Egress egress : egressList) {
             for (PathLink pathLink : egress.getPath().getPathLink()) {
                 if (!pathLinkList.contains(pathLink)) {
@@ -969,9 +964,9 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
     }
 
     @Override
-    public Future<RpcResult<QueryE2eServicePathOutput>> queryE2eServicePath(QueryE2eServicePathInput input) {
+    public ListenableFuture<RpcResult<QueryE2eServicePathOutput>> queryE2eServicePath(QueryE2eServicePathInput input) {
         if (null == input.getTopologyId() || null == input.getDomainId() || null == input.getStreamId()) {
-            LOG.info("Query e2e service path input error.");
+            //LOG.info("Query e2e service path input error.");
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Query e2e service path input error.");
             return RpcReturnUtil.returnSucess(new QueryE2eServicePathOutputBuilder()
@@ -984,7 +979,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                         input.getDomainId(), input.getStreamId(), input.getTopologyId()));
         E2eService e2eService = DataOperator.readData(dataBroker, e2eServiceIID);
         if (null == e2eService) {
-            LOG.info("E2e service of streamId:{} not exist.", input.getStreamId());
+            //LOG.info("E2e service of streamId:{} not exist.", input.getStreamId());
             ConfigureResult configureResult = RpcReturnUtil.getConfigResult(false, "E2e service not exist.");
             return RpcReturnUtil.returnSucess(new QueryE2eServicePathOutputBuilder()
                     .setConfigureResult(configureResult).build());
@@ -994,10 +989,10 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .setNodeId(e2eService.getSourceNode())
                 .setTpId(e2eService.getSourceTp())
                 .build();
-        List<Listener> listenerList = new ArrayList<>();
+        List<Listener> listenerList = new ArrayList<Listener>();
         for (Listeners listeners : e2eService.getListeners()) {
             Listener listener = new ListenerBuilder()
-                    .setKey(new ListenerKey(listeners.getDestNode()))
+                    .withKey(new ListenerKey(listeners.getDestNode()))
                     .setNodeId(listeners.getDestNode())
                     .setTpId(listeners.getDestTp())
                     .build();
@@ -1012,7 +1007,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 .build();
         try {
             QueryPathOutput queryPathOutput = pceApiService.queryPath(queryPathInput).get().getResult();
-            List<String> linksList = new ArrayList<>();
+            List<String> linksList = new ArrayList<String>();
             for (org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.Egress egress : queryPathOutput
                     .getEgress()) {
                 for (PathLink pathLink : egress.getPath().getPathLink()) {
@@ -1030,7 +1025,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                     .build();
             return RpcReturnUtil.returnSucess(queryE2eServicePathOutput);
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
 
         ConfigureResult configureResult = RpcReturnUtil

@@ -8,19 +8,22 @@
 
 package org.opendaylight.detnet.detnetservice.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.detnet.common.util.DataOperator;
 import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.PreofType;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteDetnetServiceConfigurationInput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteDetnetServiceConfigurationInputBuilder;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteDetnetServiceConfigurationOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DetnetDriverApiService;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteDetnetServiceConfigurationInput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteDetnetServiceConfigurationInputBuilder;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteDetnetServiceConfigurationOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.instance.rev180904.DetnetServiceInstanceManager;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.instance.rev180904.DeviceDetnetServiceManager;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.instance.rev180904.SequenceNumberType;
@@ -58,8 +61,7 @@ import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.
 import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.Ipv6Address;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.opendaylight.yangtools.yang.common.RpcResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.opendaylight.yangtools.yang.common.Uint32;
 
 
 public class DetnetServiceDb {
@@ -81,7 +83,7 @@ public class DetnetServiceDb {
 
     public String writeIngressProxyInstanceToDB(String node, Long proxyInstanceId, ServiceInstance serviceInstance,
                                                List<ClientFlow> clientFlow) {
-        LOG.info("writeIngressProxyInstanceToDB");
+        //LOG.info("writeIngressProxyInstanceToDB");
         SegmentPathKey pathKey = serviceInstance.getSegmentPathKey();
         Integer domainId = pathKey.getDomainId();
         Long streamId = pathKey.getStreamId();
@@ -117,7 +119,7 @@ public class DetnetServiceDb {
                     .setDetnetServices(createServiceInstance(serviceInstance))
                     .build();
         }
-        List<ServiceProxyInstance> proxyInstanceList = new ArrayList<>();
+        List<ServiceProxyInstance> proxyInstanceList = new ArrayList<ServiceProxyInstance>();
         proxyInstanceList.add(proxyInstance);
         inputBuilder.setServiceProxyInstance(proxyInstanceList);
         domainServiceBuilder.setServiceProxyInstance(proxyInstanceList);
@@ -125,15 +127,16 @@ public class DetnetServiceDb {
         InstanceIdentifier<DomainService> domainServicePath = buildDomainServicePath(node, domainId, streamId);
         DomainService domainService = domainServiceBuilder.build();
         DataOperator.writeData(DataOperator.OperateType.MERGE, dataBroker, domainServicePath, domainService);
-        LOG.info("writeProxyInstanceToDeviceManagerDB: nodeId-" + node + " ,domain-service--" + domainService);
+        //LOG.info("writeProxyInstanceToDeviceManagerDB: nodeId-" + node + " ,domain-service--" + domainService);
 
-        Future<RpcResult<Void>> resultFuture = driverApiService.writeDetnetServiceConfiguration(inputBuilder.build());
+        ListenableFuture<RpcResult<WriteDetnetServiceConfigurationOutput>> resultFuture =
+                driverApiService.writeDetnetServiceConfiguration(inputBuilder.build());
         try {
             if (!resultFuture.get().isSuccessful()) {
                 return resultFuture.get().getErrors().iterator().next().getMessage();
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info("write detnet service proxy instance to node error! Exception: " + e.getMessage());
+           // LOG.info("write detnet service proxy instance to node error! Exception: " + e.getMessage());
             return e.getMessage();
         }
         return "";
@@ -147,13 +150,13 @@ public class DetnetServiceDb {
                 .build();
         InstanceIdentifier<ServiceProxyInstances> proxyInstancesPath = buildProxyInstancePath(domainId,streamId,node,
                 proxyInstanceId);
-        LOG.info("writeProxyInstanceToServiceManagerDB: domainId-" + domainId + " ,streamId-" + streamId
-                + " ,proxyInstance-" + proxyInstances);
+        //LOG.info("writeProxyInstanceToServiceManagerDB: domainId-" + domainId + " ,streamId-" + streamId
+                //+ " ,proxyInstance-" + proxyInstances);
         DataOperator.writeData(DataOperator.OperateType.MERGE,dataBroker,proxyInstancesPath,proxyInstances);
     }
 
-    private List<Long> getClientFlowIds(List<ClientFlow> clientFlows) {
-        List<Long> clientFlowIds = new ArrayList<>();
+    private List<Uint32> getClientFlowIds(List<ClientFlow> clientFlows) {
+        List<Uint32> clientFlowIds = new ArrayList<Uint32>();
         for (ClientFlow clientFlow : clientFlows) {
             clientFlowIds.add(clientFlow.getClientFlowId());
         }
@@ -161,7 +164,7 @@ public class DetnetServiceDb {
     }
 
     private List<DetnetServices> createServiceInstance(ServiceInstance serviceInstance) {
-        List<DetnetServices> services = new ArrayList<>();
+        List<DetnetServices> services = new ArrayList<DetnetServices>();
         services.add(new DetnetServicesBuilder()
                 .setDetnetFlowId(serviceInstance.getDetnetFlowId())
                 .setDetnetTransportId(serviceInstance.getTransportTunnelId())
@@ -184,17 +187,18 @@ public class DetnetServiceDb {
     }
 
     public String writeEgressProxyInstanceToDB(String node, Long proxyInstanceId, ServiceInstance serviceInstance) {
-        LOG.info("writeEgressProxyInstanceToDB");
+        //LOG.info("writeEgressProxyInstanceToDB");
         SegmentPathKey pathKey = serviceInstance.getSegmentPathKey();
         Integer domainId = pathKey.getDomainId();
         Long streamId = pathKey.getStreamId();
         writeProxyInstanceToServiceManagerDB(node, domainId, streamId, proxyInstanceId);
-        return writeProxyInstanceToDeviceManagerDB(node,domainId,streamId,proxyInstanceId,serviceInstance,null);
+        return writeProxyInstanceToDeviceManagerDB(node,domainId,streamId,proxyInstanceId,serviceInstance,
+                null);
     }
 
     public String writeMappingInstanceToDB(String relayNode, Long mappingInstanceId, ServiceInstance inServiceInstance,
                                          ServiceInstance outServiceInstance) {
-        LOG.info("writeMappingInstanceToDB");
+        //LOG.info("writeMappingInstanceToDB");
         SegmentPathKey pathKey = inServiceInstance.getSegmentPathKey();
         Integer domainId = pathKey.getDomainId();
         Long streamId = pathKey.getStreamId();
@@ -222,8 +226,8 @@ public class DetnetServiceDb {
 
         InstanceIdentifier<ServiceMappingInstance> serviceMappingInstancePath = buildServiceMappingPath(node,domainId,
                 streamId,mappingInstanceId);
-        LOG.info("writeMappingInstanceToDeviceManagerDB: domainId-" + domainId + " ,streamId-" + streamId
-                + " ,nodeId-" + node + " ,mappingInstance-" + mappingInstance);
+        //LOG.info("writeMappingInstanceToDeviceManagerDB: domainId-" + domainId + " ,streamId-" + streamId
+            //    + " ,nodeId-" + node + " ,mappingInstance-" + mappingInstance);
         DataOperator.writeData(DataOperator.OperateType.MERGE,dataBroker,serviceMappingInstancePath,mappingInstance);
         List<ServiceMappingInstance> mappingInstances = new ArrayList<>();
         mappingInstances.add(mappingInstance);
@@ -232,15 +236,16 @@ public class DetnetServiceDb {
                 .setStreamId(streamId)
                 .setServiceMappingInstance(mappingInstances)
                 .build();
-        Future<RpcResult<Void>> rpcResult = driverApiService.writeDetnetServiceConfiguration(input);
+        ListenableFuture<RpcResult<WriteDetnetServiceConfigurationOutput>> rpcResult =
+                driverApiService.writeDetnetServiceConfiguration(input);
         try {
             if (!rpcResult.get().isSuccessful()) {
-                LOG.info("Write detnet service mapping instance to node error! nodeId: " + node
-                        + " streamId: " + streamId);
+                //LOG.info("Write detnet service mapping instance to node error! nodeId: " + node
+                //        + " streamId: " + streamId);
                 return rpcResult.get().getErrors().iterator().next().getMessage();
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info("Write detnet service mapping instance to node error! Exception: " + e.getMessage());
+            //LOG.info("Write detnet service mapping instance to node error! Exception: " + e.getMessage());
             return e.getMessage();
         }
         return "";
@@ -262,8 +267,8 @@ public class DetnetServiceDb {
                 .build();
         InstanceIdentifier<ServiceMappingInstances> mappingInstancesPath = buildMappingInstancePath(domainId,streamId,
                 node, mappingInstanceId);
-        LOG.info("writeMappingInstanceToServiceManagerDB: domainId-" + domainId + " ,streamId-" + streamId
-                + " ,mappingInstance-" + mappingInstances);
+        //LOG.info("writeMappingInstanceToServiceManagerDB: domainId-" + domainId + " ,streamId-" + streamId
+           //     + " ,mappingInstance-" + mappingInstances);
         DataOperator.writeData(DataOperator.OperateType.MERGE,dataBroker,mappingInstancesPath,mappingInstances);
     }
 
@@ -288,27 +293,28 @@ public class DetnetServiceDb {
     private String writeTransportTunnelsToDB(Integer domainId, Long streamId, String node,
                                            DetnetTransportTunnels detnetTransportTunnels) {
         InstanceIdentifier<DetnetTransportTunnels> transportTunnelsPath = buidTransportTunnelsPath(domainId,streamId,
-                node,detnetTransportTunnels.getKey());
-        LOG.info("writeTransportTunnelsToDB: domainId-" + domainId + " ,streamId-" + streamId + " ,nodeId-"
-                + node + " ,detnettransportTunnel-" + detnetTransportTunnels);
+                node,detnetTransportTunnels.key());
+        //LOG.info("writeTransportTunnelsToDB: domainId-" + domainId + " ,streamId-" + streamId + " ,nodeId-"
+            //    + node + " ,detnettransportTunnel-" + detnetTransportTunnels);
         DataOperator.writeData(DataOperator.OperateType.MERGE,dataBroker,transportTunnelsPath,detnetTransportTunnels);
 
-        List<DetnetTransportTunnels> tunnelList = new ArrayList<>();
+        List<DetnetTransportTunnels> tunnelList = new ArrayList<DetnetTransportTunnels>();
         tunnelList.add(detnetTransportTunnels);
         WriteDetnetServiceConfigurationInput input = new WriteDetnetServiceConfigurationInputBuilder()
                 .setNodeId(node)
                 .setStreamId(streamId)
                 .setDetnetTransportTunnels(tunnelList)
                 .build();
-        Future<RpcResult<Void>> rpcResult = driverApiService.writeDetnetServiceConfiguration(input);
+        ListenableFuture<RpcResult<WriteDetnetServiceConfigurationOutput>> rpcResult =
+                driverApiService.writeDetnetServiceConfiguration(input);
         try {
             if (!rpcResult.get().isSuccessful()) {
-                LOG.info("Write detnet service detnet transport-tunnel to node error! nodeId: " + node
-                        + " streamId: " + streamId);
+                //LOG.info("Write detnet service detnet transport-tunnel to node error! nodeId: " + node
+                   //     + " streamId: " + streamId);
                 return rpcResult.get().getErrors().iterator().next().getMessage();
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info("Write detnet service detnet transport-tunnel to node error! Exception: " + e.getMessage());
+            //LOG.info("Write detnet service detnet transport-tunnel to node error! Exception: " + e.getMessage());
             return e.getMessage();
         }
         return "";
@@ -325,23 +331,24 @@ public class DetnetServiceDb {
 
     private String writeDetnetFlowsToDB(Integer domainId, Long streamId, String node, DetnetFlows detnetFlows) {
         InstanceIdentifier<DetnetFlows> detnetFlowsPath = buildDetnetFlowsPath(domainId,streamId,node,
-                detnetFlows.getKey());
-        LOG.info("writeDetnetFlowsToDB: domainId-" + domainId + " ,streamId-" + streamId + " ,nodeId-" + node
-                + " ,detnetFlows-" + detnetFlows);
+                detnetFlows.key());
+        //LOG.info("writeDetnetFlowsToDB: domainId-" + domainId + " ,streamId-" + streamId + " ,nodeId-" + node
+            //    + " ,detnetFlows-" + detnetFlows);
         DataOperator.writeData(DataOperator.OperateType.MERGE,dataBroker,detnetFlowsPath,detnetFlows);
-        List<DetnetFlows> detnetFlowList = new ArrayList<>();
+        List<DetnetFlows> detnetFlowList = new ArrayList<DetnetFlows>();
         detnetFlowList.add(detnetFlows);
         WriteDetnetServiceConfigurationInput input = new WriteDetnetServiceConfigurationInputBuilder()
                 .setNodeId(node).setStreamId(streamId).setDetnetFlows(detnetFlowList).build();
-        Future<RpcResult<Void>> rpcResult = driverApiService.writeDetnetServiceConfiguration(input);
+        ListenableFuture<RpcResult<WriteDetnetServiceConfigurationOutput>> rpcResult =
+                driverApiService.writeDetnetServiceConfiguration(input);
         try {
             if (!rpcResult.get().isSuccessful()) {
-                LOG.info("Write detnet service detnet flow to node error! nodeId: " + node
-                        + " streamId: " + streamId);
+                //LOG.info("Write detnet service detnet flow to node error! nodeId: " + node
+                       // + " streamId: " + streamId);
                 return rpcResult.get().getErrors().iterator().next().getMessage();
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info("Write detnet service detnet flow to node error! Exception: " + e.getMessage());
+           // LOG.info("Write detnet service detnet flow to node error! Exception: " + e.getMessage());
             return e.getMessage();
         }
         return "";
@@ -358,7 +365,7 @@ public class DetnetServiceDb {
     public Services getServicesFromServiceManagerDB(Integer domainId, Long streamId) {
         InstanceIdentifier<Services> servicesPath = buildServicesPath(domainId, streamId);
         Services data = DataOperator.readData(dataBroker,servicesPath);
-        LOG.info("getServicesFromServiceManagerDB:domainId-" + domainId + " ,streamId-" + data);
+        //LOG.info("getServicesFromServiceManagerDB:domainId-" + domainId + " ,streamId-" + data);
         return data;
     }
 
@@ -368,36 +375,38 @@ public class DetnetServiceDb {
     }
 
     public String deleteDetnetServiceFromDB(Integer domainId, Long streamId, Services services) {
-        LOG.debug("deleteDetnetServiceFromDB");
+        //LOG.debug("deleteDetnetServiceFromDB");
         StringBuffer errorMsg = new StringBuffer();
         if (services != null && services.getServiceProxyInstances() != null) {
             for (ServiceProxyInstances proxyInstance : services.getServiceProxyInstances()) {
-                Future<RpcResult<Void>> rpcResult = deleteDetnetServiceFromDeviceManagerDB(proxyInstance.getNodeId(),
+                ListenableFuture<RpcResult<DeleteDetnetServiceConfigurationOutput>> rpcResult =
+                        deleteDetnetServiceFromDeviceManagerDB(proxyInstance.getNodeId(),
                         domainId,streamId);
                 try {
                     if (!rpcResult.get().isSuccessful()) {
-                        LOG.info("Delete detnet service proxy instance to node error! streamId: " + streamId
-                                + "nodeId :" + proxyInstance.getNodeId());
+                        //LOG.info("Delete detnet service proxy instance to node error! streamId: " + streamId
+                           //     + "nodeId :" + proxyInstance.getNodeId());
                         errorMsg.append(rpcResult.get().getErrors().iterator().next().getMessage());
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    LOG.info("Delete detnet service proxy instance to node error! Exception: " + e.getMessage());
+                    //LOG.info("Delete detnet service proxy instance to node error! Exception: " + e.getMessage());
                     errorMsg.append(e.getMessage());
                 }
             }
         }
         if (services != null && services.getServiceMappingInstances() != null) {
             for (ServiceMappingInstances mappingInstance : services.getServiceMappingInstances()) {
-                Future<RpcResult<Void>> rpcResult = deleteDetnetServiceFromDeviceManagerDB(mappingInstance.getNodeId(),
+                ListenableFuture<RpcResult<DeleteDetnetServiceConfigurationOutput>> rpcResult =
+                        deleteDetnetServiceFromDeviceManagerDB(mappingInstance.getNodeId(),
                         domainId,streamId);
                 try {
                     if (!rpcResult.get().isSuccessful()) {
-                        LOG.info("Delete detnet service mapping instance to node error! streamId: " + streamId
-                                + "nodeId :" + mappingInstance.getNodeId());
+                       // LOG.info("Delete detnet service mapping instance to node error! streamId: " + streamId
+                        //        + "nodeId :" + mappingInstance.getNodeId());
                         errorMsg.append(rpcResult.get().getErrors().iterator().next().getMessage());
                     }
                 } catch (InterruptedException | ExecutionException e) {
-                    LOG.info("Delete detnet service mapping instance to node error! Exception: " + e.getMessage());
+                   // LOG.info("Delete detnet service mapping instance to node error! Exception: " + e.getMessage());
                     errorMsg.append(e.getMessage());
                 }
             }
@@ -407,15 +416,16 @@ public class DetnetServiceDb {
     }
 
     private void deleteDetnetServiceFromServiceManagerDB(Integer domainId, Long streamId) {
-        LOG.debug("deleteDetnetServiceFromServiceManagerDB: domainId-" + domainId + " ,streamId-" + streamId);
-        DataOperator.writeData(DataOperator.OperateType.DELETE,dataBroker,buildServicesPath(domainId,streamId),null);
+        //LOG.debug("deleteDetnetServiceFromServiceManagerDB: domainId-" + domainId + " ,streamId-" + streamId);
+        DataOperator.writeData(DataOperator.OperateType.DELETE,dataBroker,buildServicesPath(domainId,streamId),
+                null);
     }
 
-    private Future<RpcResult<Void>> deleteDetnetServiceFromDeviceManagerDB(String nodeId, Integer domainId,
-                                                                           Long streamId) {
+    private ListenableFuture<RpcResult<DeleteDetnetServiceConfigurationOutput>> deleteDetnetServiceFromDeviceManagerDB(
+            String nodeId, Integer domainId, Long streamId) {
         InstanceIdentifier<DomainService> domainServicePath = buildDomainServicePath(nodeId,domainId,streamId);
-        LOG.debug("deleteDetnetServiceFromDeviceManagerDB: domainId-" + domainId + " ,streamId-" + streamId
-                + " ,nodeId-" + nodeId);
+       // LOG.debug("deleteDetnetServiceFromDeviceManagerDB: domainId-" + domainId + " ,streamId-" + streamId
+           //     + " ,nodeId-" + nodeId);
         DataOperator.writeData(DataOperator.OperateType.DELETE,dataBroker,domainServicePath,null);
         DeleteDetnetServiceConfigurationInput input = new DeleteDetnetServiceConfigurationInputBuilder()
                 .setNodeId(nodeId).setStreamId(streamId).build();
@@ -438,7 +448,7 @@ public class DetnetServiceDb {
     public DeviceDetnetServiceManager getDeviceService() {
         InstanceIdentifier<DeviceDetnetServiceManager> path = buildDeviceDetnetServiceManagerPath();
         DeviceDetnetServiceManager data = DataOperator.readData(dataBroker,path);
-        LOG.info("getDeviceService:-" + data);
+        //LOG.info("getDeviceService:-" + data);
         return data;
     }
 
@@ -448,7 +458,8 @@ public class DetnetServiceDb {
 
     public void distroy() {
         DataOperator.writeData(DataOperator.OperateType.DELETE,dataBroker,buildDetnetServiceResourcePath(),null);
-        DataOperator.writeData(DataOperator.OperateType.DELETE,dataBroker,buildDeviceDetnetServiceManagerPath(),null);
+        DataOperator.writeData(DataOperator.OperateType.DELETE,dataBroker,buildDeviceDetnetServiceManagerPath(),
+                null);
         DataOperator.writeData(DataOperator.OperateType.DELETE,dataBroker,buildDetnetServiceResourcePath(),null);
     }
 

@@ -7,13 +7,13 @@
  */
 package org.opendaylight.detnet.tsn.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.sal.binding.api.RpcConsumerRegistry;
@@ -62,11 +62,11 @@ public class TsnServiceImpl implements DetnetTsnServiceApiService {
 
 
     @Override
-    public Future<RpcResult<DeleteTsnServiceOutput>> deleteTsnService(DeleteTsnServiceInput input) {
+    public ListenableFuture<RpcResult<DeleteTsnServiceOutput>> deleteTsnService(DeleteTsnServiceInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getTsnNodes(), input.getVlanId(),
                 input.getGroupMacAddress())).isInputIllegal()) {
-            LOG.info("Delete tsn service input error!" + checkResult.getErrorCause());
+            //LOG.info("Delete tsn service input error!" + checkResult.getErrorCause());
             NotificationProvider.getInstance()
                     .notify(NotificationProvider.reportMessage("Input error."));
             return RpcReturnUtil.returnErr("Input error.");
@@ -81,8 +81,9 @@ public class TsnServiceImpl implements DetnetTsnServiceApiService {
             InstanceIdentifier<ForwardingItemList> forwardingItemListIID = tsnServiceIID
                     .child(ForwardingItemList.class, new ForwardingItemListKey(
                             input.getGroupMacAddress(), input.getVlanId()));
-            if (!DataOperator.writeData(DataOperator.OperateType.DELETE, dataBroker, forwardingItemListIID, null)) {
-                LOG.info("Delete tsn service failed, nodeId: {}", nodeId);
+            if (!DataOperator.writeData(DataOperator.OperateType.DELETE, dataBroker, forwardingItemListIID,
+                    null)) {
+                //LOG.info("Delete tsn service failed, nodeId: {}", nodeId);
                 allDeleteSuccess = false;
             }
             DeleteTsnServiceToSouthInput deleteTsnServiceToSouthInput = new DeleteTsnServiceToSouthInputBuilder()
@@ -93,20 +94,21 @@ public class TsnServiceImpl implements DetnetTsnServiceApiService {
             try {
                 if (!detnetDriverApiService.deleteTsnServiceToSouth(deleteTsnServiceToSouthInput).get()
                         .isSuccessful()) {
-                    LOG.info("Delete tsn service to south failed, nodeId: {}", nodeId);
+                    //LOG.info("Delete tsn service to south failed, nodeId: {}", nodeId);
                     allDeleteSuccess = false;
                 }
             } catch (InterruptedException | ExecutionException e) {
-                LOG.info(Arrays.toString(e.getStackTrace()));
+                //LOG.info(Arrays.toString(e.getStackTrace()));
             }
         }
-        return allDeleteSuccess
-                ? RpcReturnUtil.returnSucess(new DeleteTsnServiceOutputBuilder().build())
-                : RpcReturnUtil.returnErr("Delete datastore failed.");
+        if (allDeleteSuccess) {
+            RpcReturnUtil.returnSucess(new DeleteTsnServiceOutputBuilder().build());
+        }
+        return RpcReturnUtil.returnErr("Delete datastore failed.");
     }
 
     public boolean deleteTsnService(Set<String> successNodes, String groupMacAddress, int vlanId) {
-        List<String> tsnNodes = new ArrayList<>();
+        List<String> tsnNodes = new ArrayList<String>();
         tsnNodes.addAll(successNodes);
         DeleteTsnServiceInput deleteTsnServiceInput = new DeleteTsnServiceInputBuilder()
                 .setTsnNodes(tsnNodes)
@@ -118,33 +120,33 @@ public class TsnServiceImpl implements DetnetTsnServiceApiService {
                 return false;
             }
         } catch (InterruptedException | ExecutionException e) {
-            LOG.info(Arrays.toString(e.getStackTrace()));
+            //LOG.info(Arrays.toString(e.getStackTrace()));
         }
         return true;
     }
 
     @Override
-    public Future<RpcResult<ConfigTsnServiceOutput>> configTsnService(ConfigTsnServiceInput input) {
+    public ListenableFuture<RpcResult<ConfigTsnServiceOutput>> configTsnService(ConfigTsnServiceInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getTsnForwardingItems(), input.getVlanId(),
                 input.getGroupMacAddress())).isInputIllegal()) {
-            LOG.info("Config tsn service input error!" + checkResult.getErrorCause());
+            //LOG.info("Config tsn service input error!" + checkResult.getErrorCause());
             NotificationProvider.getInstance()
                     .notify(NotificationProvider.reportMessage("Input error."));
             return RpcReturnUtil.returnErr("Input error.");
         }
 
         String groupMacAddress = input.getGroupMacAddress();
-        int vlanId = input.getVlanId();
-        Set<String> successNodes = new HashSet<>();
+        int vlanId = input.getVlanId().intValue();
+        Set<String> successNodes = new HashSet<String>();
         for (TsnForwardingItems tsnForwardingItems : input.getTsnForwardingItems()) {
             InstanceIdentifier<ForwardingItemList> forwardingItemListIID = getTsnServiceIID(
                     tsnForwardingItems.getNodeId())
                     .child(ForwardingItemList.class, new ForwardingItemListKey(groupMacAddress, vlanId));
-            List<String> outPortList = new ArrayList<>();
+            List<String> outPortList = new ArrayList<String>();
             outPortList.add(tsnForwardingItems.getOutPort());
             ForwardingItemList forwardingItemList = new ForwardingItemListBuilder()
-                    .setKey(new ForwardingItemListKey(groupMacAddress, vlanId))
+                    .withKey(new ForwardingItemListKey(groupMacAddress, vlanId))
                     .setGroupMacAddress(groupMacAddress)
                     .setVlanId(vlanId)
                     .setOutPorts(outPortList)
@@ -161,14 +163,15 @@ public class TsnServiceImpl implements DetnetTsnServiceApiService {
                 isWriteTsnToSouthSuccess = detnetDriverApiService.writeTsnServiceToSouth(writeTsnServiceToSouthInput)
                         .get().isSuccessful();
             } catch (InterruptedException | ExecutionException e) {
-                LOG.info(Arrays.toString(e.getStackTrace()));
+                //LOG.info(Arrays.toString(e.getStackTrace()));
             }
 
             if (!DataOperator.writeData(DataOperator.OperateType.MERGE, dataBroker, forwardingItemListIID,
                     forwardingItemList) || !isWriteTsnToSouthSuccess) {
-                LOG.info("Config tsn service failed, nodeId: {}", tsnForwardingItems.getNodeId());
+                //LOG.info("Config tsn service failed, nodeId: {}", tsnForwardingItems.getNodeId());
                 if (!deleteTsnService(successNodes, groupMacAddress, vlanId)) {
-                    LOG.info("Delete succeed nodes failed.");
+                    //LOG.info("Delete succeed nodes failed.");
+                    RpcReturnUtil.returnErr("Write datastore failed.");
                 }
                 return RpcReturnUtil.returnErr("Write datastore failed.");
             }
@@ -178,12 +181,12 @@ public class TsnServiceImpl implements DetnetTsnServiceApiService {
     }
 
     @Override
-    public Future<RpcResult<QueryTsnServiceForwardingItemOutput>> queryTsnServiceForwardingItem(
+    public ListenableFuture<RpcResult<QueryTsnServiceForwardingItemOutput>> queryTsnServiceForwardingItem(
             QueryTsnServiceForwardingItemInput input) {
         InstanceIdentifier<TsnService> tsnServiceIID = getTsnServiceIID(input.getNodeId());
         TsnService tsnService = DataOperator.readData(dataBroker, tsnServiceIID);
         if (null == tsnService) {
-            LOG.info("Read datastore failed or  data of this nodeId not exist.");
+            //LOG.info("Read datastore failed or  data of this nodeId not exist.");
             return RpcReturnUtil.returnErr("Query failed.");
         }
         QueryTsnServiceForwardingItemOutput output = new QueryTsnServiceForwardingItemOutputBuilder()

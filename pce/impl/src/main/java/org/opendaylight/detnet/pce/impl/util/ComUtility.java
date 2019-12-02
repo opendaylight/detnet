@@ -19,6 +19,7 @@ import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.graph.link.TcDelay;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.links.PathLink;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.links.PathLinkBuilder;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology.detnet.topology.DetnetLink;
+import org.opendaylight.yangtools.yang.common.Uint8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +36,14 @@ public final class ComUtility {
         if (link.getMetric() == null) {
             return DEFAULT_METRIC;
         } else {
-            return link.getMetric();
+            return link.getMetric().longValue();
         }
     }
 
     public static Long getLinkDelay(GraphLink link, Short trafficClass) {
         for (TcDelay tcDelay : link.getTcDelay()) {
-            if (tcDelay.getTrafficClass().equals(trafficClass)) {
-                return tcDelay.getDelay();
+            if (tcDelay.getTrafficClass().equals(Uint8.valueOf(trafficClass))) {
+                return tcDelay.getDelay().longValue();
             }
         }
         return DEFAULT_DELAY;
@@ -56,10 +57,10 @@ public final class ComUtility {
 
     public static List<GraphLink> getLinkInGraph(Graph<String, GraphLink> graph, String sourceNode, String sourceTp,
                                             String destNode, String destTp) {
-        List<GraphLink> linksFound = new LinkedList<>();
+        List<GraphLink> linksFound = new LinkedList<GraphLink>();
         if ((!graph.containsVertex(sourceNode))
                 || (!graph.containsVertex(destNode))) {
-            LOG.error("source:" + sourceNode.toString() + " dest:" + destNode.toString());
+            //LOG.error("source:" + sourceNode.toString() + " dest:" + destNode.toString());
             return linksFound;
         }
 
@@ -79,10 +80,10 @@ public final class ComUtility {
     }
 
     public static List<GraphLink> getOtherLink(Graph<String, GraphLink> graph, GraphLink link) {
-        List<GraphLink> linksList = new LinkedList<>();
+        List<GraphLink> linksList = new LinkedList<GraphLink>();
         if ((!graph.containsVertex(link.getDest().getDestNode()))
                 || (!graph.containsVertex(link.getSource().getSourceNode()))) {
-            LOG.error(link.toString());
+            //LOG.error(link.toString());
             return linksList;
         }
 
@@ -123,7 +124,7 @@ public final class ComUtility {
 
 
     public static List<PathLink> transform2PathLink(List<DetnetLink> links) {
-        LinkedList<PathLink> path = new LinkedList<>();
+        LinkedList<PathLink> path = new LinkedList<PathLink>();
         if (links == null) {
             return path;
         }

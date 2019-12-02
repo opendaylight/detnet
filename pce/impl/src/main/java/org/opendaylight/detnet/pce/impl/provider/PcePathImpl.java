@@ -8,9 +8,9 @@
 
 package org.opendaylight.detnet.pce.impl.provider;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
+import com.google.common.util.concurrent.ListenableFuture;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.opendaylight.detnet.common.util.RpcReturnUtil;
 import org.opendaylight.detnet.pce.impl.detnetpath.PathUnifyKey;
 import org.opendaylight.detnet.pce.impl.detnetpath.ServiceInstance;
@@ -32,11 +32,12 @@ import org.opendaylight.yangtools.yang.common.RpcResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PcePathImpl implements PceApiService {
+public final class PcePathImpl implements PceApiService {
     private static final Logger LOG = LoggerFactory.getLogger(PcePathImpl.class);
     private PcePathDb pcePathDb = PcePathDb.getInstance();
     private static PcePathImpl instance = new PcePathImpl();
-    private ConcurrentHashMap<PathInstanceKey, ServiceInstance> serviceInstances = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<PathInstanceKey, ServiceInstance> serviceInstances =
+            new ConcurrentHashMap<PathInstanceKey, ServiceInstance>();
 
     private PcePathImpl() {
     }
@@ -50,11 +51,11 @@ public class PcePathImpl implements PceApiService {
     }
 
     @Override
-    public Future<RpcResult<QueryPathOutput>> queryPath(QueryPathInput input) {
+    public ListenableFuture<RpcResult<QueryPathOutput>> queryPath(QueryPathInput input) {
         if (input == null || input.getDomainId() == null || input.getStreamId() == null) {
             return RpcReturnUtil.returnErr("Illegal argument!");
         }
-        LOG.debug(input.toString());
+        //LOG.debug(input.toString());
         ServiceInstance serviceInstance = getServiceInstance(new PathInstanceKey(input.getDomainId(),
                 input.getStreamId()));
         if (serviceInstance == null) {
@@ -68,13 +69,13 @@ public class PcePathImpl implements PceApiService {
     }
 
     @Override
-    public Future<RpcResult<CreatePathOutput>> createPath(CreatePathInput input) {
+    public ListenableFuture<RpcResult<CreatePathOutput>> createPath(CreatePathInput input) {
         if (input == null || input.getDomainId() == null || input.getStreamId() == null
                 || input.getIngressNodeId() == null || input.getEgress() == null || input.getEgress().isEmpty()
                 || input.getTrafficClass() == null) {
             return RpcReturnUtil.returnErr("Illegal argument!");
         }
-        LOG.debug(input.toString());
+        //LOG.debug(input.toString());
         ServiceInstance serviceInstance = getServiceInstance(new PathInstanceKey(input.getDomainId(),
                 input.getStreamId()));
         if (serviceInstance == null) {
@@ -89,11 +90,12 @@ public class PcePathImpl implements PceApiService {
             if (!serviceInstance.getIngressNodeId().equals(input.getIngressNodeId())) {
                 return RpcReturnUtil.returnErr("ingress Node associated with the same stream-id is not match!");
             }
-            if (!serviceInstance.getTrafficClass().equals(input.getTrafficClass())) {
+            if (!serviceInstance.getTrafficClass().equals(input.getTrafficClass().shortValue())) {
                 return RpcReturnUtil.returnErr("traffic-class associated with the same stream-id is not match!");
             }
             if (!isPathConstraintMatched(serviceInstance.getPathConstraint(),input.getPathConstraint())) {
-                return RpcReturnUtil.returnErr("path constraint associated with the same stream-id is not match!");
+                return RpcReturnUtil.returnErr(
+                        "path constraint associated with the same stream-id is not match!");
             }
             serviceInstance.calcPath(input,true);
         }
@@ -118,10 +120,10 @@ public class PcePathImpl implements PceApiService {
     }
 
     @Override
-    public Future<RpcResult<RemovePathOutput>> removePath(RemovePathInput input) {
+    public ListenableFuture<RpcResult<RemovePathOutput>> removePath(RemovePathInput input) {
         RemovePathOutputBuilder output = new RemovePathOutputBuilder();
         if (input.getDomainId() != null && input.getSrtreamId() != null && input.getIngressNodeId() != null) {
-            LOG.debug(input.toString());
+            //LOG.debug(input.toString());
             ServiceInstance serviceInstance = getServiceInstance(new PathInstanceKey(input.getDomainId(),
                     input.getSrtreamId()));
             output.setIngressNodeId(input.getIngressNodeId());
@@ -138,8 +140,8 @@ public class PcePathImpl implements PceApiService {
                 serviceInstances.remove(new PathInstanceKey(input.getDomainId(),input.getSrtreamId()));
             } else {
                 for (Egress egress : input.getEgress()) {
-                    SinglePath singlePath = serviceInstance.getPath(new PathUnifyKey(input.getSrtreamId(),
-                            input.getDomainId(), input.getIngressNodeId(),egress.getEgressNodeId()));
+                    SinglePath singlePath = serviceInstance.getPath(new PathUnifyKey(input.getSrtreamId().longValue(),
+                            input.getDomainId().intValue(), input.getIngressNodeId(),egress.getEgressNodeId()));
                     if (singlePath != null) {
                         singlePath.destroy();
                         serviceInstance.removePath(singlePath);

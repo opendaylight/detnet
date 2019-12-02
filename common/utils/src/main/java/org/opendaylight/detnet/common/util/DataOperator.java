@@ -26,7 +26,9 @@ public final class DataOperator {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataOperator.class);
 
-    private DataOperator() {}
+    private DataOperator() {
+
+    }
 
     public static <T extends DataObject> T readData(DataBroker dataBroker,
                                                     InstanceIdentifier<T> path) {

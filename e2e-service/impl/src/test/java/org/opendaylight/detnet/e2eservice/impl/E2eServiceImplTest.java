@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 package org.opendaylight.detnet.e2eservice.impl;
-
+/*
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyString;
@@ -21,8 +21,9 @@ import java.util.concurrent.Future;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.opendaylight.controller.md.sal.binding.api.DataBroker;
+import org.opendaylight.controller.md.sal.binding.api.DataBroker;*/
 import org.opendaylight.controller.md.sal.binding.test.AbstractConcurrentDataBrokerTest;
+/*
 import org.opendaylight.controller.sal.binding.api.RpcConsumerRegistry;
 import org.opendaylight.detnet.common.util.DataOperator;
 import org.opendaylight.detnet.common.util.NodeDataBroker;
@@ -129,9 +130,10 @@ import org.opendaylight.yangtools.yang.common.RpcResult;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory;*/
 
 public class E2eServiceImplTest extends AbstractConcurrentDataBrokerTest {
+    /*
     private static final Logger LOG = LoggerFactory.getLogger(E2eServiceImplTest.class);
     private static final String TOPOLOGY = "test-detnet-topolgoy";
     private static final String TEMPLATE = "test-qos-template";
@@ -191,6 +193,7 @@ public class E2eServiceImplTest extends AbstractConcurrentDataBrokerTest {
             3\   5    /7     10 \ | 13  |  16
               E4----R6           E10---B12----E14
     */
+    /*
     public void initTopology() {
         DetnetLink detnetLink1 = getDetnetLink("01", "01", "01-01", "02", "02-01");
         writeDetnetLink(TOPOLOGY, detnetLink1);
@@ -711,5 +714,5 @@ public class E2eServiceImplTest extends AbstractConcurrentDataBrokerTest {
                 .setDetnet(isDetnet)
                 .build();
         DataOperator.writeData(DataOperator.OperateType.PUT, dataBroker, trafficClassesIID, trafficClasses);
-    }
+    }*/
 }

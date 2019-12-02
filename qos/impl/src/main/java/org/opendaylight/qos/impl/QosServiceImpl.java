@@ -7,9 +7,10 @@
  */
 package org.opendaylight.qos.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.detnet.common.util.DataCheck;
@@ -42,6 +43,7 @@ import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.priority.t
 import org.opendaylight.yang.gen.v1.urn.detnet.qos.template.rev180903.priority.traffic._class.mapping.mapping.templates.pri._8021ps.Pri8021pKey;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.opendaylight.yangtools.yang.common.RpcResult;
+import org.opendaylight.yangtools.yang.common.Uint32;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,12 +57,14 @@ public class QosServiceImpl implements DetnetQosTemplateApiService {
     }
 
     @Override
-    public Future<RpcResult<ConfigMappingTemplateOutput>> configMappingTemplate(ConfigMappingTemplateInput input) {
+    public ListenableFuture<RpcResult<ConfigMappingTemplateOutput>> configMappingTemplate(
+            ConfigMappingTemplateInput input) {
 
         boolean nullParameter = DataCheck.checkNotNull(input, input.getTemplateName(), input.getPriorityMapping())
                 .isInputIllegal();
         if (!nullParameter || !isInputComplete(input)) {
-            ConfigureResult configureResult = RpcReturnUtil.getConfigResult(false, "Config qos template input error.");
+            ConfigureResult configureResult = RpcReturnUtil.getConfigResult(
+                    false, "Config qos template input error.");
             return RpcReturnUtil.returnSucess(new ConfigMappingTemplateOutputBuilder()
                     .setConfigureResult(configureResult).build());
         }
@@ -68,8 +72,8 @@ public class QosServiceImpl implements DetnetQosTemplateApiService {
         InstanceIdentifier<MappingTemplates> mappingTemplatesIID = getMappingTemplatesIID(input.getTemplateName());
 
         for (PriorityMapping priorityMapping : input.getPriorityMapping()) {
-            for (long pcpValue : priorityMapping.getPcpValues()) {
-                LOG.info("Config mapping for pcp: {}", pcpValue);
+            for (Uint32 pcpValue : priorityMapping.getPcpValues()) {
+                //LOG.info("Config mapping for pcp: {}", pcpValue);
                 InstanceIdentifier<Pri8021p> pri8021pIID = mappingTemplatesIID
                         .child(Pri8021ps.class)
                         .child(Pri8021p.class, new Pri8021pKey(pcpValue));
@@ -78,15 +82,16 @@ public class QosServiceImpl implements DetnetQosTemplateApiService {
                         .setTrafficClass(priorityMapping.getTrafficClass())
                         .build();
                 if (!DataOperator.writeData(DataOperator.OperateType.MERGE, dataBroker, pri8021pIID, pri8021p)) {
-                    LOG.info("Write datastore : {} failed!", pcpValue);
-                    ConfigureResult configureResult = RpcReturnUtil.getConfigResult(false, "Write datastore failed.");
+                    //LOG.info("Write datastore : {} failed!", pcpValue);
+                    ConfigureResult configureResult = RpcReturnUtil.getConfigResult(
+                            false, "Write datastore failed.");
                     return RpcReturnUtil.returnSucess(new ConfigMappingTemplateOutputBuilder()
                             .setConfigureResult(configureResult).build());
                 }
             }
 
-            for (long dscpValue : priorityMapping.getDscpValues()) {
-                LOG.info("Config mapping for dscp: {}", dscpValue);
+            for (Uint32 dscpValue : priorityMapping.getDscpValues()) {
+                //LOG.info("Config mapping for dscp: {}", dscpValue);
                 InstanceIdentifier<Ipv4Dscp> ipv4DscpIID = mappingTemplatesIID
                         .child(Ipv4Dscps.class)
                         .child(Ipv4Dscp.class, new Ipv4DscpKey(dscpValue));
@@ -95,8 +100,9 @@ public class QosServiceImpl implements DetnetQosTemplateApiService {
                         .setTrafficClass(priorityMapping.getTrafficClass())
                         .build();
                 if (!DataOperator.writeData(DataOperator.OperateType.MERGE, dataBroker, ipv4DscpIID, ipv4Dscp)) {
-                    LOG.info("Write datastore : {} failed!", dscpValue);
-                    ConfigureResult configureResult = RpcReturnUtil.getConfigResult(false, "Write datastore failed.");
+                    //LOG.info("Write datastore : {} failed!", dscpValue);
+                    ConfigureResult configureResult = RpcReturnUtil.getConfigResult(
+                            false, "Write datastore failed.");
                     return RpcReturnUtil.returnSucess(new ConfigMappingTemplateOutputBuilder()
                             .setConfigureResult(configureResult).build());
                 }
@@ -114,10 +120,11 @@ public class QosServiceImpl implements DetnetQosTemplateApiService {
     }
 
     @Override
-    public Future<RpcResult<QueryMappingTemplateOutput>> queryMappingTemplate(QueryMappingTemplateInput input) {
+    public ListenableFuture<RpcResult<QueryMappingTemplateOutput>> queryMappingTemplate(
+            QueryMappingTemplateInput input) {
         InstanceIdentifier<MappingTemplates> mappingTemplatesIID = getMappingTemplatesIID(input.getTemplateName());
         if (null == DataOperator.readData(dataBroker, mappingTemplatesIID)) {
-            LOG.info("Query failed, not exist.");
+            //LOG.info("Query failed, not exist.");
             return RpcReturnUtil.returnSucess(new QueryMappingTemplateOutputBuilder().build());
         }
         InstanceIdentifier<TcToPriorityMapping> tcToPriorityMappingIID = getMappingTemplatesIID(input.getTemplateName())
@@ -131,16 +138,19 @@ public class QosServiceImpl implements DetnetQosTemplateApiService {
     }
 
     @Override
-    public Future<RpcResult<DeleteMappingTemplateOutput>> deleteMappingTemplate(DeleteMappingTemplateInput input) {
+    public ListenableFuture<RpcResult<DeleteMappingTemplateOutput>> deleteMappingTemplate(
+            DeleteMappingTemplateInput input) {
         InstanceIdentifier<MappingTemplates> mappingTemplatesIID = getMappingTemplatesIID(input.getTemplateName());
         if (null == DataOperator.readData(dataBroker, mappingTemplatesIID)) {
-            LOG.info("Delete failed, not exist.");
-            ConfigureResult configureResult = RpcReturnUtil.getConfigResult(false, "Template not exist.");
+            //LOG.info("Delete failed, not exist.");
+            ConfigureResult configureResult = RpcReturnUtil.getConfigResult(
+                    false, "Template not exist.");
             return RpcReturnUtil.returnSucess(new DeleteMappingTemplateOutputBuilder()
                     .setConfigureResult(configureResult).build());
         }
         if (!DataOperator.writeData(DataOperator.OperateType.DELETE, dataBroker, mappingTemplatesIID, null)) {
-            ConfigureResult configureResult = RpcReturnUtil.getConfigResult(false, "Delete mapping template failed.");
+            ConfigureResult configureResult = RpcReturnUtil.getConfigResult(
+                    false, "Delete mapping template failed.");
             return RpcReturnUtil.returnSucess(new DeleteMappingTemplateOutputBuilder()
                     .setConfigureResult(configureResult).build());
         }
@@ -152,26 +162,26 @@ public class QosServiceImpl implements DetnetQosTemplateApiService {
     private boolean isInputComplete(ConfigMappingTemplateInput input) {
         List<PriorityMapping> priorityMappings = input.getPriorityMapping();
         short pri8021pCount = 0;
-        List<Long> expect = new ArrayList<>();
+        List<Long> expect = new ArrayList<Long>();
         for (long i = 0;i < 64;i++) {
             expect.add(i);
         }
-        List<Long> actual = new ArrayList<>();
+        List<Long> actual = new ArrayList<Long>();
         for (PriorityMapping priorityMapping : priorityMappings) {
-            for (long pcpValue : priorityMapping.getPcpValues()) {
-                pri8021pCount += (short) (1 << pcpValue);
+            for (Uint32 pcpValue : priorityMapping.getPcpValues()) {
+                pri8021pCount += (short) (1 << pcpValue.shortValue());
             }
-            for (long ipv4Dscp : priorityMapping.getDscpValues()) {
-                actual.add(ipv4Dscp);
+            for (Uint32 ipv4Dscp : priorityMapping.getDscpValues()) {
+                actual.add(ipv4Dscp.longValue());
             }
         }
 
         if (255 != pri8021pCount) {
-            LOG.info("Input error : 8021p.");
+           // LOG.info("Input error : 8021p.");
             return false;
         }
         if (!expect.containsAll(actual) || !actual.containsAll(expect)) {
-            LOG.info("Input error : ipv4Dscp.");
+            //LOG.info("Input error : ipv4Dscp.");
             return false;
         }
         return true;

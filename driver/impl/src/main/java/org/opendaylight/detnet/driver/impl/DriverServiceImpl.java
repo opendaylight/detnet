@@ -6,19 +6,23 @@
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
 package org.opendaylight.detnet.driver.impl;
-
-import java.util.concurrent.Future;
-
+import com.google.common.util.concurrent.ListenableFuture;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
 import org.opendaylight.detnet.common.util.DataOperator;
 import org.opendaylight.detnet.common.util.RpcReturnUtil;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteDetnetServiceConfigurationInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteDetnetServiceConfigurationOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteTsnServiceToSouthInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteTsnServiceToSouthOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DetnetDriverApiService;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteBandwidthToSouthInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteBandwidthToSouthOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteDetnetServiceConfigurationInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteDetnetServiceConfigurationOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteGateConfigToSouthInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteGateConfigToSouthOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteTsnServiceToSouthInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteTsnServiceToSouthOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.yang.service.rev181210.DetnetConfiguration;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.yang.service.rev181210.detnet.configuration.BandwidthConfiguration;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.yang.service.rev181210.detnet.configuration.DetnetServiceConfiguration;
@@ -48,22 +52,25 @@ public class DriverServiceImpl implements DetnetDriverApiService {
     private static final Logger LOG = LoggerFactory.getLogger(DriverServiceImpl.class);
 
     @Override
-    public Future<RpcResult<Void>> deleteDetnetServiceConfiguration(DeleteDetnetServiceConfigurationInput input) {
-        LOG.info("Delete detnet service configuration input: " + input);
+    public ListenableFuture<RpcResult<DeleteDetnetServiceConfigurationOutput>> deleteDetnetServiceConfiguration(
+            DeleteDetnetServiceConfigurationInput input) {
+        //LOG.info("Delete detnet service configuration input: " + input);
         if (null == input.getNodeId() || null == input.getStreamId()) {
             return RpcReturnUtil.returnErr("Input error!");
         }
-        InstanceIdentifier<Service> detnetServicePath = buildDetnetServicepath(input.getStreamId());
+        InstanceIdentifier<Service> detnetServicePath = buildDetnetServicepath(input.getStreamId().longValue());
         if (!DataOperator.writeNetconfData(input.getNodeId(), DataOperator.OperateType.DELETE, detnetServicePath,
                 null, LogicalDatastoreType.CONFIGURATION)) {
-            LOG.info("Delete detnet service configuration to node failed!node: " + input.getNodeId());
-            return RpcReturnUtil.returnErr("Delete detnet service configuration to node failed!node: " + input.getNodeId());
+            //LOG.info("Delete detnet service configuration to node failed!node: " + input.getNodeId());
+            return RpcReturnUtil.returnErr("Delete detnet service configuration to node failed!node: "
+                    + input.getNodeId());
         }
         return RpcReturnUtil.returnSucess(null);
     }
 
     @Override
-    public Future<RpcResult<Void>> writeGateConfigToSouth(WriteGateConfigToSouthInput input) {
+    public ListenableFuture<RpcResult<WriteGateConfigToSouthOutput>> writeGateConfigToSouth(
+            WriteGateConfigToSouthInput input) {
         if (null == input.getNodeId() || null == input.getGateConfigParams()) {
             LOG.info("Write gate config to south bound input error.");
             return RpcReturnUtil.returnErr("Input error.");
@@ -75,7 +82,7 @@ public class DriverServiceImpl implements DetnetDriverApiService {
                 .child(GateConfigList.class, new GateConfigListKey(tpId));
 
         GateConfigList gateConfigList = new GateConfigListBuilder(input.getGateConfigParams())
-                .setKey(new GateConfigListKey(tpId))
+                .withKey(new GateConfigListKey(tpId))
                 .build();
 
         if (!DataOperator.writeNetconfData(input.getNodeId(), DataOperator.OperateType.MERGE, gateConfigListIID,
@@ -88,7 +95,8 @@ public class DriverServiceImpl implements DetnetDriverApiService {
     }
 
     @Override
-    public Future<RpcResult<Void>> writeBandwidthToSouth(WriteBandwidthToSouthInput input) {
+    public ListenableFuture<RpcResult<WriteBandwidthToSouthOutput>> writeBandwidthToSouth(
+            WriteBandwidthToSouthInput input) {
         if (null == input.getNodeId() || null == input.getTpId() || null == input.getTrafficClass()
                 || null == input.getReservedBandwidth()) {
             LOG.info("Write bandwidth config to south bound input error.");
@@ -101,7 +109,7 @@ public class DriverServiceImpl implements DetnetDriverApiService {
                 .child(TrafficClasses.class, new TrafficClassesKey(input.getTrafficClass()));
 
         TrafficClasses trafficClasses = new TrafficClassesBuilder()
-                .setKey(new TrafficClassesKey(input.getTrafficClass()))
+                .withKey(new TrafficClassesKey(input.getTrafficClass()))
                 .setTcIndex(input.getTrafficClass())
                 .setReservedBandwidth(input.getReservedBandwidth())
                 .build();
@@ -114,16 +122,17 @@ public class DriverServiceImpl implements DetnetDriverApiService {
     }
 
     @Override
-    public Future<RpcResult<Void>> writeTsnServiceToSouth(WriteTsnServiceToSouthInput input) {
+    public ListenableFuture<RpcResult<WriteTsnServiceToSouthOutput>> writeTsnServiceToSouth(
+            WriteTsnServiceToSouthInput input) {
         if (null == input.getNodeId() || null == input.getVlanId() || null == input.getGroupMacAddress()
                 || null == input.getOutPorts()) {
             LOG.info("Write tsn service to south bound input error.");
             return RpcReturnUtil.returnErr("Input error.");
         }
         InstanceIdentifier<ForwardingItemList> forwardingItemListIID = getForwardingItemListIID(
-                input.getGroupMacAddress(), input.getVlanId());
+                input.getGroupMacAddress(), input.getVlanId().intValue());
         ForwardingItemList forwardingItemList = new ForwardingItemListBuilder()
-                .setKey(new ForwardingItemListKey(input.getGroupMacAddress(), input.getVlanId()))
+                .withKey(new ForwardingItemListKey(input.getGroupMacAddress(), input.getVlanId()))
                 .setVlanId(input.getVlanId())
                 .setGroupMacAddress(input.getGroupMacAddress())
                 .setOutPorts(input.getOutPorts())
@@ -137,29 +146,33 @@ public class DriverServiceImpl implements DetnetDriverApiService {
     }
 
     @Override
-    public Future<RpcResult<Void>> writeDetnetServiceConfiguration(WriteDetnetServiceConfigurationInput input) {
-        LOG.info("Write detnet service configuration input: " + input);
+    public ListenableFuture<RpcResult<WriteDetnetServiceConfigurationOutput>> writeDetnetServiceConfiguration(
+            WriteDetnetServiceConfigurationInput input) {
+
+        //LOG.info("Write detnet service configuration input: " + input);
         if (null == input.getNodeId() || null == input.getStreamId()) {
             return RpcReturnUtil.returnErr("Input error!");
         }
-        InstanceIdentifier<Service> detnetServicePath = buildDetnetServicepath(input.getStreamId());
+        InstanceIdentifier<Service> detnetServicePath = buildDetnetServicepath(input.getStreamId().longValue());
         Service detnetService = new ServiceBuilder(input).build();
         if (!DataOperator.writeNetconfData(input.getNodeId(), DataOperator.OperateType.MERGE, detnetServicePath,
                 detnetService, LogicalDatastoreType.CONFIGURATION)) {
-            LOG.info("Write detnet service configuration to node failed!node: " + input.getNodeId());
-            return RpcReturnUtil.returnErr("Write detnet service configuration to node failed!node: " + input.getNodeId());
+            //LOG.info("Write detnet service configuration to node failed!node: " + input.getNodeId());
+            return RpcReturnUtil.returnErr("Write detnet service configuration to node failed!node: "
+                    + input.getNodeId());
         }
         return RpcReturnUtil.returnSucess(null);
     }
 
     @Override
-    public Future<RpcResult<Void>> deleteTsnServiceToSouth(DeleteTsnServiceToSouthInput input) {
+    public ListenableFuture<RpcResult<DeleteTsnServiceToSouthOutput>> deleteTsnServiceToSouth(
+            DeleteTsnServiceToSouthInput input) {
         if (null == input.getNodeId() || null == input.getVlanId() || null == input.getGroupMacAddress()) {
             LOG.info("Delete tsn service to south bound input error.");
             return RpcReturnUtil.returnErr("Input error.");
         }
         InstanceIdentifier<ForwardingItemList> forwardingItemListIID = getForwardingItemListIID(
-                input.getGroupMacAddress(), input.getVlanId());
+                input.getGroupMacAddress(), input.getVlanId().intValue());
         if (!DataOperator.writeNetconfData(input.getNodeId(), DataOperator.OperateType.DELETE, forwardingItemListIID,
                 null, LogicalDatastoreType.CONFIGURATION)) {
             LOG.info("Delete tsn service to south bound failed.");

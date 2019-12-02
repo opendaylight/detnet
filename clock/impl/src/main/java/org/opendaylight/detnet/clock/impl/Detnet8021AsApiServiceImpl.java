@@ -7,8 +7,7 @@
  */
 package org.opendaylight.detnet.clock.impl;
 
-import java.util.concurrent.Future;
-
+import com.google.common.util.concurrent.ListenableFuture;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.detnet.common.util.DataCheck;
 import org.opendaylight.detnet.common.util.DataOperator;
@@ -51,11 +50,12 @@ public class Detnet8021AsApiServiceImpl implements Detnet8021asRevApiService {
     }
 
     @Override
-    public Future<RpcResult<Config8021asRevPortDsOutput>> config8021asRevPortDs(Config8021asRevPortDsInput input) {
+    public ListenableFuture<RpcResult<Config8021asRevPortDsOutput>> config8021asRevPortDs(
+            Config8021asRevPortDsInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getNodeId(), input.getInstanceNumber(),
                 input.getPortNumber(), input.getPortDsInput())).isInputIllegal()) {
-            LOG.info("Config 8021As port ds input error!" + checkResult.getErrorCause());
+            //LOG.info("Config 8021As port ds input error!" + checkResult.getErrorCause());
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Config 8021as port ds input error.");
             return RpcReturnUtil.returnSucess(new Config8021asRevPortDsOutputBuilder()
@@ -68,11 +68,12 @@ public class Detnet8021AsApiServiceImpl implements Detnet8021asRevApiService {
                     .setConfigureResult(configureResult).build());
         }
 
-        InstanceIdentifier<PortDataSet> portDsIID = getGptpInstanceIID(input.getNodeId(), input.getInstanceNumber())
+        InstanceIdentifier<PortDataSet> portDsIID = getGptpInstanceIID(input.getNodeId(),
+                input.getInstanceNumber().byteValue())
                 .child(PortDataSet.class, new PortDataSetKey(input.getPortNumber()));
         PortDataSet portDataSet = new PortDataSetBuilder(input.getPortDsInput())
                 .setPortNumber(input.getPortNumber())
-                .setKey(new PortDataSetKey(input.getPortNumber()))
+                .withKey(new PortDataSetKey(input.getPortNumber()))
                 .build();
         if (!DataOperator.writeData(DataOperator.OperateType.PUT, dataBroker, portDsIID, portDataSet)) {
             ConfigureResult configureResult = RpcReturnUtil
@@ -86,11 +87,11 @@ public class Detnet8021AsApiServiceImpl implements Detnet8021asRevApiService {
     }
 
     @Override
-    public Future<RpcResult<Config8021asRevDsOutput>> config8021asRevDs(Config8021asRevDsInput input) {
+    public ListenableFuture<RpcResult<Config8021asRevDsOutput>> config8021asRevDs(Config8021asRevDsInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getNodeId(), input.getInstanceNumber(),
                 input.getDefaultDsInput())).isInputIllegal()) {
-            LOG.info("Config 8021As default ds input error!" + checkResult.getErrorCause());
+            //LOG.info("Config 8021As default ds input error!" + checkResult.getErrorCause());
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Config 8021As default ds input error!");
             return RpcReturnUtil.returnSucess(new Config8021asRevDsOutputBuilder()
@@ -104,7 +105,7 @@ public class Detnet8021AsApiServiceImpl implements Detnet8021asRevApiService {
         }
 
         InstanceIdentifier<DefaultDataSet> defaultDsIID = getGptpInstanceIID(input.getNodeId(),
-                input.getInstanceNumber()).child(DefaultDataSet.class);
+                input.getInstanceNumber().byteValue()).child(DefaultDataSet.class);
         DefaultDataSet defaultDataSet = new DefaultDataSetBuilder(input.getDefaultDsInput()
                 .getDefaultDataSet()).build();
         if (!DataOperator.writeData(DataOperator.OperateType.PUT, dataBroker, defaultDsIID, defaultDataSet)) {
@@ -119,17 +120,19 @@ public class Detnet8021AsApiServiceImpl implements Detnet8021asRevApiService {
     }
 
     @Override
-    public Future<RpcResult<Delete8021asRevPortDsOutput>> delete8021asRevPortDs(Delete8021asRevPortDsInput input) {
+    public ListenableFuture<RpcResult<Delete8021asRevPortDsOutput>> delete8021asRevPortDs(
+            Delete8021asRevPortDsInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getNodeId(), input.getInstanceNumber(),
                 input.getPortNumber())).isInputIllegal()) {
-            LOG.info("Delete 8021As port ds input error!" + checkResult.getErrorCause());
+            //LOG.info("Delete 8021As port ds input error!" + checkResult.getErrorCause());
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Delete 8021As port ds input error!");
             return RpcReturnUtil.returnSucess(new Delete8021asRevPortDsOutputBuilder()
                     .setConfigureResult(configureResult).build());
         }
-        InstanceIdentifier<PortDataSet> portDsIID = getGptpInstanceIID(input.getNodeId(), input.getInstanceNumber())
+        InstanceIdentifier<PortDataSet> portDsIID = getGptpInstanceIID(input.getNodeId(),
+                input.getInstanceNumber().byteValue())
                 .child(PortDataSet.class, new PortDataSetKey(input.getPortNumber()));
         if (!DataOperator.writeData(DataOperator.OperateType.DELETE, dataBroker, portDsIID, null)) {
             ConfigureResult configureResult = RpcReturnUtil
@@ -143,18 +146,18 @@ public class Detnet8021AsApiServiceImpl implements Detnet8021asRevApiService {
     }
 
     @Override
-    public Future<RpcResult<Delete8021asRevDsOutput>> delete8021asRevDs(Delete8021asRevDsInput input) {
+    public ListenableFuture<RpcResult<Delete8021asRevDsOutput>> delete8021asRevDs(Delete8021asRevDsInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getNodeId(), input.getInstanceNumber()))
                 .isInputIllegal()) {
-            LOG.info("Delete 8021As default ds input error!" + checkResult.getErrorCause());
+            //LOG.info("Delete 8021As default ds input error!" + checkResult.getErrorCause());
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Delete 8021As default ds input error!");
             return RpcReturnUtil.returnSucess(new Delete8021asRevDsOutputBuilder()
                     .setConfigureResult(configureResult).build());
         }
         InstanceIdentifier<DefaultDataSet> defaultDataSetIID = getGptpInstanceIID(input.getNodeId(),
-                input.getInstanceNumber()).child(DefaultDataSet.class);
+                input.getInstanceNumber().byteValue()).child(DefaultDataSet.class);
         if (!DataOperator.writeData(DataOperator.OperateType.DELETE, dataBroker, defaultDataSetIID, null)) {
             ConfigureResult configureResult = RpcReturnUtil
                     .getConfigResult(false, "Delete port ds datastore failed.");
@@ -178,7 +181,7 @@ public class Detnet8021AsApiServiceImpl implements Detnet8021asRevApiService {
                 .child(GptpDevice.class, new GptpDeviceKey(nodeId));
         GptpDevice gptpDevice = DataOperator.readData(dataBroker, gptpDeviceIID);
         if (null == gptpDevice || !gptpDevice.isGptpSupported()) {
-            LOG.info("Node not exist or gptp not supported.");
+            //LOG.info("Node not exist or gptp not supported.");
             return false;
         }
         return true;

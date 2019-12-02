@@ -45,6 +45,7 @@ import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology.detnet.topology.domains.Segments;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.node.Ltps;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.ltp.TrafficClasses;
+import org.opendaylight.yangtools.yang.common.Uint16;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,15 +57,17 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
     private final RpcProviderRegistry rpcRegistry;
     private BindingAwareBroker.RpcRegistration<PceApiService> pceService;
     private static TopologyProvider instance;
-    protected Map<Integer, Graph<String, GraphLink>> topoGraphMap = new ConcurrentHashMap<>();
-    protected Map<Integer, Graph<String, GraphLink>> topoGraphMapAllLink = new ConcurrentHashMap<>();
+    protected Map<Integer, Graph<String, GraphLink>> topoGraphMap =
+            new ConcurrentHashMap<Integer, Graph<String, GraphLink>>();
+    protected Map<Integer, Graph<String, GraphLink>> topoGraphMapAllLink =
+            new ConcurrentHashMap<Integer, Graph<String, GraphLink>>();
     private PcePathImpl pcePathImpl = PcePathImpl.getInstance();
     protected ExecutorService executor = Executors.newFixedThreadPool(1);
 
     public TopologyProvider(final DataBroker dataBroker, final RpcProviderRegistry rpcRegistry) {
         this.dataBroker = dataBroker;
         this.rpcRegistry = rpcRegistry;
-        instance = this;
+        //instance = this;
     }
 
 
@@ -84,16 +87,16 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
     }
 
     public void init() {
-        LOG.info("TopologyProvider Session Initiated");
+        //LOG.info("TopologyProvider Session Initiated");
         PcePathDb.getInstance().setDataBroker(dataBroker);
         pceService = rpcRegistry.addRpcImplementation(PceApiService.class,pcePathImpl);
         pcePathImpl.writeDbRoot();
         setPcePathImpl(pcePathImpl);
-        PathsRecordPerDomain.getInstance().setPcePathService(pcePathImpl);
+        //PathsRecordPerDomain.getInstance().setPcePathService(pcePathImpl);
     }
 
     public void close() {
-        LOG.info("TopologyProvider Closed");
+        //LOG.info("TopologyProvider Closed");
         destroy();
         pcePathImpl.destroy();
 
@@ -103,7 +106,7 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
     }
 
     private Graph<String, GraphLink> transformTopo2Graph(DetnetTopology detnetTopology, Integer domainId) {
-        Graph<String, GraphLink> graph = new SparseMultigraph<>();
+        Graph<String, GraphLink> graph = new SparseMultigraph<String, GraphLink>();
         if (detnetTopology == null) {
             return graph;
         }
@@ -139,7 +142,7 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
     }
 
     private List<TcDelay> buildTcDelay(List<DetnetNode> detnetNode, DetnetLink link) {
-        List<TcDelay> tcDelayList = new ArrayList<>();
+        List<TcDelay> tcDelayList = new ArrayList<TcDelay>();
         for (DetnetNode node : detnetNode) {
             if (link.getLinkSource().getSourceNode().equals(node.getNodeId())) {
                 for (Ltps ltp : node.getLtps()) {
@@ -147,8 +150,8 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
                         for (TrafficClasses trafficClass : ltp.getTrafficClasses()) {
                             tcDelayList.add(new TcDelayBuilder()
                                     .setTrafficClass(trafficClass.getTcIndex())
-                                    .setDelay(link.getLinkDelay() + node.getProcessDelay()
-                                            + trafficClass.getMaximumQueueDelay())
+                                    .setDelay(link.getLinkDelay().longValue() + node.getProcessDelay().longValue()
+                                            + trafficClass.getMaximumQueueDelay().longValue())
                                     .build());
                         }
                     }
@@ -177,7 +180,7 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
         linkInfo2Log("topo:addlink to domain " + domainId + logMessage , link);
     }
 
-
+/*
     private void removeLinkFromGraphAllLink(GraphLink link,Graph<String, GraphLink> topoGraphAllLink) {
         if (!topoGraphAllLink.containsEdge(link)) {
             return;
@@ -221,19 +224,19 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
     }
 
     private boolean nodeBelongsDomain(Integer domainId, String node, DetnetTopology detnetTopology) {
-        List<Integer> segmentIdList = new ArrayList<>();
+        List<Integer> segmentIdList = new ArrayList<Integer>();
         for (Domains domain : detnetTopology.getDomains()) {
-            if (domain.getDomainId().equals(domainId)) {
+            if (domain.getDomainId().equals(Uint16.valueOf(domainId))) {
                 for (Segments segment :domain.getSegments()) {
-                    segmentIdList.add(segment.getSegmentId());
+                    segmentIdList.add(segment.getSegmentId().intValue());
                 }
             }
         }
         for (DetnetNode detnetNode : detnetTopology.getDetnetNode()) {
             if (detnetNode.getNodeId().equals(node)) {
-                for (org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823
-                        .detnet.node.Segments segment : detnetNode.getSegments()) {
-                    if (segmentIdList.contains(segment.getSegmentId())) {
+                for (org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.node.Segments
+                        segment : detnetNode.getSegments()) {
+                    if (segmentIdList.contains(segment.getSegmentId().intValue())) {
                         return true;
                     }
                 }
@@ -255,13 +258,13 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
                 if (topoGraph == null) {
                     topoGraph = newTopoGraph(topoId,domainId);
                     if (topoGraph == null) {
-                        LOG.error("getTopoGraph:topoGraph is null!");
+                       // LOG.error("getTopoGraph:topoGraph is null!");
                         return null;
                     }
                 }
             }
         }
-        LOG.debug("getTopoGraph: domain-" + domainId + " graph-" + topoGraph);
+        //LOG.debug("getTopoGraph: domain-" + domainId + " graph-" + topoGraph);
         return topoGraph;
     }
 
@@ -289,7 +292,7 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
 
 
     private Graph<String, GraphLink> newTopoGraphBidirect(Graph<String, GraphLink> topoGraphAllLink,Integer domainId) {
-        Graph<String, GraphLink> graphNew = new SparseMultigraph<>();
+        Graph<String, GraphLink> graphNew = new SparseMultigraph<String, GraphLink>();
         if (topoGraphAllLink == null) {
             return graphNew;
         }
@@ -321,7 +324,7 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
 
         List<GraphLink> linkReverse = ComUtility.getReverseLink(topoGraphAllLink, link);
         if ((linkReverse == null) || (linkReverse.isEmpty())) {
-            LOG.info("reverse link not exist,link=" + ComUtility.getLinkString(link));
+            //LOG.info("reverse link not exist,link=" + ComUtility.getLinkString(link));
             return;
         }
         addLink2Graph(link, linkReverse, topoGraph, " ,topoGraph,link: ",domain);
@@ -339,7 +342,7 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
 
                 List<GraphLink> linksReverse = ComUtility.getReverseLink(topoGraph, link);
                 if ((linksReverse == null) || (linksReverse.isEmpty())) {
-                    LOG.error("no reverse link!", link.toString());
+                    //LOG.error("no reverse link!", link.toString());
                 } else {
                     removeLinksFromGraph(linksReverse, topoGraph);
                 }
@@ -368,7 +371,7 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
         String destId = link.getDest().getDestNode();
 
         if (!graph.containsVertex(srcId)) {
-            LOG.error("srcId does not exist!", link.toString());
+            //LOG.error("srcId does not exist!", link.toString());
             return;
         } else {
             if (0 == graph.getNeighborCount(srcId)) {
@@ -376,7 +379,7 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
             }
         }
         if (!graph.containsVertex(destId)) {
-            LOG.error("destId does not exist!", link.toString());
+            //LOG.error("destId does not exist!", link.toString());
             return;
         } else {
             if (0 == graph.getNeighborCount(destId)) {
@@ -398,13 +401,13 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
 
 
     private void linkInfo2Log(String headInfo, GraphLink link) {
-        LOG.info(headInfo + " {" + link + "} ");
+        //LOG.info(headInfo + " {" + link + "} ");
     }
 
     @Override
     public void onLinkBandwidthChange(LinkBandwidthChange notification) {
         OldLink oldLink = notification.getOldLink();
-        Long newAvailableDetnetBandwidth = notification.getNewAvailableBandwidth();
+        Long newAvailableDetnetBandwidth = notification.getNewAvailableBandwidth().longValue();
         changeLink(oldLink, newAvailableDetnetBandwidth,topoGraphMapAllLink,"topoGraphAllLink");
         changeLink(oldLink,newAvailableDetnetBandwidth,topoGraphMap,"topoGraph");
 
@@ -414,7 +417,7 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
                             Map<Integer, Graph<String, GraphLink>> graphMap, String logMessage) {
         for (Graph<String,GraphLink> graphAllLink :graphMap.values()) {
             Collection<GraphLink> outEdges = graphAllLink.getOutEdges(oldLink.getLinkSource().getSourceNode());
-            List<GraphLink> outLinks = new ArrayList<>(outEdges);
+            List<GraphLink> outLinks = new ArrayList<GraphLink>(outEdges);
             if (oldLink != null && !outLinks.isEmpty()) {
                 for (GraphLink link : outLinks) {
                     if (link.getLinkId().equals(oldLink.getLinkId())) {

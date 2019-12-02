@@ -8,23 +8,22 @@
 
 package org.opendaylight.detnet.pce.impl.topology;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import java.util.HashSet;
+//import com.google.common.annotations.VisibleForTesting;
+//import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.mina.util.ConcurrentHashSet;
 import org.opendaylight.detnet.pce.impl.detnetpath.PathUnifyKey;
-import org.opendaylight.detnet.pce.impl.provider.PcePathImpl;
+//import org.opendaylight.detnet.pce.impl.provider.PcePathImpl;
 
 
 
 public final class PathsRecordPerDomain {
     private static PathsRecordPerDomain instance = new PathsRecordPerDomain();
-    private Map<Integer, DomainRecord> domainRecords = new ConcurrentHashMap<>();
-    private PcePathImpl pcePathService;
+    private Map<Integer, DomainRecord> domainRecords = new ConcurrentHashMap<Integer, DomainRecord>();
+    //private PcePathImpl pcePathService;
 
     private PathsRecordPerDomain() {
     }
@@ -33,19 +32,21 @@ public final class PathsRecordPerDomain {
         return instance;
     }
 
+    /*
     public void setPcePathService(PcePathImpl pcePathService) {
         this.pcePathService = pcePathService;
-    }
+    }*/
 
     public void add(Integer domainId, PathUnifyKey pathUnifyKey) {
         DomainRecord domainRecord = domainRecords.get(domainId);
         if (domainRecord == null) {
             synchronized (this) {
                 domainRecord = domainRecords.get(domainId);
+                /*
                 if (domainRecord == null) {
                     domainRecord = new DomainRecord(domainId);
                     domainRecords.put(domainId, domainRecord);
-                }
+                }*/
             }
         }
 
@@ -59,26 +60,29 @@ public final class PathsRecordPerDomain {
         }
     }
 
+    /*
     @VisibleForTesting
     public Set<PathUnifyKey> getPathSetByDomainId(Integer domainId) {
         DomainRecord domainRecord = domainRecords.get(domainId);
         if (domainRecord == null) {
-            return new HashSet<>();
+            return new HashSet<PathUnifyKey>();
         }
         return domainRecord.getPathSet();
-    }
+    }*/
 
     public void destroy() {
         domainRecords.clear();
     }
 
-    private class DomainRecord {
-        private Integer domainId;
-        private Set<PathUnifyKey> pathSet = new ConcurrentHashSet<>();
 
+    private static class DomainRecord {
+        //private Integer domainId;
+        private Set<PathUnifyKey> pathSet = new ConcurrentHashSet<PathUnifyKey>();
+
+        /*
         DomainRecord(Integer domainId) {
             this.domainId = domainId;
-        }
+        }*/
 
         public void remove(PathUnifyKey tunnelUnifyKey) {
             pathSet.remove(tunnelUnifyKey);
@@ -88,8 +92,9 @@ public final class PathsRecordPerDomain {
             pathSet.add(tunnelUnifyKey);
         }
 
+        /*
         public Set<PathUnifyKey> getPathSet() {
             return pathSet;
-        }
+        }*/
     }
 }

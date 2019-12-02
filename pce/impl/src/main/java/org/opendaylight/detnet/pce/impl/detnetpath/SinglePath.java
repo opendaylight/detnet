@@ -20,7 +20,6 @@ import org.opendaylight.detnet.pce.impl.pathcore.PathProvider;
 import org.opendaylight.detnet.pce.impl.provider.PcePathDb;
 import org.opendaylight.detnet.pce.impl.provider.PceResult;
 import org.opendaylight.detnet.pce.impl.topology.PathsRecordPerDomain;
-import org.opendaylight.detnet.pce.impl.topology.TopologyProvider;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.api.rev180911.create.path.input.Egress;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.GraphLink;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.GraphLinkBuilder;
@@ -85,7 +84,7 @@ public class SinglePath implements IPath {
     }
 
     private LinkedList<DetnetLink> transToDetnetLinks(List<GraphLink> paths) {
-        LinkedList<DetnetLink> detnetLinks = new LinkedList<>();
+        LinkedList<DetnetLink> detnetLinks = new LinkedList<DetnetLink>();
         for (GraphLink link : paths) {
             detnetLinks.add(new DetnetLinkBuilder()
                     .setLinkId(link.getLinkId())
@@ -103,7 +102,7 @@ public class SinglePath implements IPath {
     }
 
     private List<GraphLink> transToGraphLinks(List<DetnetLink> paths) {
-        List<GraphLink> graphLinks = new ArrayList<>();
+        List<GraphLink> graphLinks = new ArrayList<GraphLink>();
         if (paths != null) {
             for (DetnetLink link : paths) {
                 graphLinks.add(new GraphLinkBuilder()
@@ -177,8 +176,8 @@ public class SinglePath implements IPath {
     }
 
     public void refreshPath(List<DetnetLink> tryToOverlapPath) {
-        LOG.info("Single path refresh:" + pathUnifyKey.toString());
-        LinkedList<DetnetLink> oldPath = new LinkedList<>(path);
+        //LOG.info("Single path refresh:" + pathUnifyKey.toString());
+        LinkedList<DetnetLink> oldPath = new LinkedList<DetnetLink>(path);
         long oldMetric = pathMetric;
 
         calcPath(false,tryToOverlapPath);
@@ -187,8 +186,8 @@ public class SinglePath implements IPath {
             writeDb();
             if (!PathCompator.isPathEqual(oldPath, path)) {
                 this.pathUpdateFlag = true;
-                LOG.info(pathUnifyKey.toString() + " Path change: old path--"
-                        + oldPath + "; new path--" + path);
+                //LOG.info(pathUnifyKey.toString() + " Path change: old path--"
+                       // + oldPath + "; new path--" + path);
             }
         }
     }

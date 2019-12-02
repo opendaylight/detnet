@@ -9,8 +9,7 @@ package org.opendaylight.detnet.common.util;
 
 import com.google.common.util.concurrent.Futures;
 
-import java.util.concurrent.Future;
-
+import com.google.common.util.concurrent.ListenableFuture;
 import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.configure.result.ConfigureResult;
 import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.configure.result.ConfigureResultBuilder;
 import org.opendaylight.yangtools.yang.common.RpcError;
@@ -22,12 +21,12 @@ public final class RpcReturnUtil {
 
     }
 
-    public static <T> Future<RpcResult<T>> returnErr(String errMsg) {
+    public static <T> ListenableFuture<RpcResult<T>> returnErr(String errMsg) {
         return Futures.immediateFuture(RpcResultBuilder.<T>failed().withError(RpcError.ErrorType.APPLICATION, errMsg)
                 .build());
     }
 
-    public static <T> Future<RpcResult<T>> returnSucess(T out) {
+    public static <T> ListenableFuture<RpcResult<T>> returnSucess(T out) {
         return Futures.immediateFuture(RpcResultBuilder.success(out).build());
     }
 

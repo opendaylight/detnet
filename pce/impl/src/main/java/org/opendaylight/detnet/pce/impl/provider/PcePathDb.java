@@ -8,14 +8,11 @@
 
 package org.opendaylight.detnet.pce.impl.provider;
 
-import java.util.List;
-
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
 import org.opendaylight.detnet.common.util.DataOperator;
 import org.opendaylight.detnet.pce.impl.detnetpath.ServiceInstance;
 import org.opendaylight.detnet.pce.impl.detnetpath.SinglePath;
-import org.opendaylight.detnet.pce.impl.topology.TopologyProvider;
 import org.opendaylight.detnet.pce.impl.util.ComUtility;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.PathData;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.PathDataBuilder;
@@ -29,21 +26,17 @@ import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.path.egress.PathBui
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.DetnetNetworkTopology;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology.DetnetTopology;
 import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology.DetnetTopologyKey;
-import org.opendaylight.yang.gen.v1.urn.detnet.topology.rev180823.detnet.network.topology.detnet.topology.DetnetLink;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 
 public class PcePathDb {
     private DataBroker dataBroker;
-    private static PcePathDb instance = null;
+    //private PcePathDb instance;
 
     public PcePathDb() {
     }
 
     public static PcePathDb getInstance() {
-        if (instance == null) {
-            instance = new PcePathDb();
-        }
-        return instance;
+        return new PcePathDb();
     }
 
     public void pathDataWriteDbRoot() {
