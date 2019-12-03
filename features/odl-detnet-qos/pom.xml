@@ -14,7 +14,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     <parent>
         <groupId>org.opendaylight.odlparent</groupId>
         <artifactId>single-feature-parent</artifactId>
-        <version>6.0.0</version>
+        <version>6.0.1</version>
         <relativePath/>
     </parent>
 
@@ -25,9 +25,8 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     <name>OpenDaylight :: detnet :: qos</name>
 
     <properties>
-        <mdsal.version>1.7.4-SNAPSHOT</mdsal.version>
-        <restconf.version>1.7.4-SNAPSHOT</restconf.version>
-        <dluxapps.version>0.7.4-SNAPSHOT</dluxapps.version>
+        <mdsal.version>1.11.0-SNAPSHOT</mdsal.version>
+        <restconf.version>1.11.0-SNAPSHOT</restconf.version>
     </properties>
 
     <dependencies>
@@ -42,13 +41,6 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
             <groupId>org.opendaylight.netconf</groupId>
             <artifactId>odl-restconf</artifactId>
             <version>${restconf.version}</version>
-            <type>xml</type>
-            <classifier>features</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.opendaylight.dluxapps</groupId>
-            <artifactId>odl-dluxapps-yangman</artifactId>
-            <version>${dluxapps.version}</version>
             <type>xml</type>
             <classifier>features</classifier>
         </dependency>
@@ -72,10 +64,8 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
         </dependency>
         <dependency>
             <groupId>org.opendaylight.aaa</groupId>
-            <artifactId>odl-aaa-shiro</artifactId>
-            <version>0.7.4-SNAPSHOT</version>
-            <type>xml</type>
-            <classifier>features</classifier>
+            <artifactId>aaa-shiro</artifactId>
+            <version>0.11.0-SNAPSHOT</version>
         </dependency>
         <!--<dependency>-->
             <!--<groupId>org.opendaylight.aaa</groupId>-->

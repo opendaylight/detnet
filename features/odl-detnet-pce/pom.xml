@@ -14,7 +14,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     <parent>
         <groupId>org.opendaylight.odlparent</groupId>
         <artifactId>single-feature-parent</artifactId>
-        <version>6.0.0</version>
+        <version>6.0.1</version>
         <relativePath/>
     </parent>
 
@@ -25,9 +25,8 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     <name>OpenDaylight :: detnet :: pce</name>
 
     <properties>
-        <mdsal.version>1.7.4-SNAPSHOT</mdsal.version>
-        <restconf.version>1.7.4-SNAPSHOT</restconf.version>
-        <dluxapps.version>0.7.4-SNAPSHOT</dluxapps.version>
+        <mdsal.version>1.11.0-SNAPSHOT</mdsal.version>
+        <restconf.version>1.11.0-SNAPSHOT</restconf.version>
     </properties>
 
     <dependencies>
@@ -46,18 +45,16 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
             <classifier>features</classifier>
         </dependency>
         <dependency>
-            <groupId>org.opendaylight.dluxapps</groupId>
-            <artifactId>odl-dluxapps-yangman</artifactId>
-            <version>${dluxapps.version}</version>
-            <type>xml</type>
-            <classifier>features</classifier>
-        </dependency>
-        <dependency>
             <groupId>org.opendaylight.netconf</groupId>
             <artifactId>odl-mdsal-apidocs</artifactId>
             <version>${restconf.version}</version>
             <type>xml</type>
             <classifier>features</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.mdsal</groupId>
+            <artifactId>mdsal-binding-api</artifactId>
+            <version>5.0.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.opendaylight.detnet</groupId>
@@ -69,13 +66,26 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
             <artifactId>pce-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
-<!--        <dependency>
+        <dependency>
             <groupId>org.opendaylight.aaa</groupId>
-            <artifactId>odl-aaa-shiro</artifactId>
-            <version>0.7.4-SNAPSHOT</version>
-            <type>xml</type>
-            <classifier>features</classifier>
-        </dependency>-->
+            <artifactId>aaa-artifacts</artifactId>
+            <version>0.11.0-SNAPSHOT</version>
+            <scope>import</scope>
+            <type>pom</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opendaylight.aaa</groupId>
+            <artifactId>aaa-encrypt-service</artifactId>
+            <version>0.11.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opendaylight.aaa</groupId>
+            <artifactId>aaa-shiro</artifactId>
+            <version>0.11.0-SNAPSHOT</version>
+        </dependency>
+
         <!--<dependency>-->
             <!--<groupId>org.opendaylight.aaa</groupId>-->
             <!--<artifactId>odl-aaa-encryption-service</artifactId>-->
@@ -84,16 +94,9 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
             <!--<classifier>features</classifier>-->
             <!--<type>xml</type>-->
         <!--</dependency>-->
-    </dependencies>
-    <!--dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.opendaylight.aaa</groupId>
-                <artifactId>aaa-artifacts</artifactId>
-                <version>0.7.4-SNAPSHOT</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
+    <!--</dependencies>
+    dependencyManagement
+        <dependencies>-->
         </dependencies>
-    </dependencyManagement-->
+    <!--/dependencyManagement-->
 </project>
