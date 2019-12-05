@@ -7,21 +7,19 @@
  */
 package org.opendaylight.detnet.bandwidth.impl;
 
-/*
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
-*/
 import org.opendaylight.controller.md.sal.binding.test.AbstractConcurrentDataBrokerTest;
-/*
 import org.opendaylight.controller.sal.binding.api.RpcConsumerRegistry;
 import org.opendaylight.detnet.common.util.DataOperator;
 import org.opendaylight.detnet.common.util.RpcReturnUtil;
@@ -30,12 +28,18 @@ import org.opendaylight.yang.gen.v1.urn.detnet.bandwidth.api.rev180907.ConfigE2e
 import org.opendaylight.yang.gen.v1.urn.detnet.bandwidth.api.rev180907.DeleteE2eBandwidthInput;
 import org.opendaylight.yang.gen.v1.urn.detnet.bandwidth.api.rev180907.DeleteE2eBandwidthInputBuilder;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteDetnetServiceConfigurationInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteDetnetServiceConfigurationOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteTsnServiceToSouthInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteTsnServiceToSouthOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DetnetDriverApiService;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteBandwidthToSouthInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteBandwidthToSouthOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteDetnetServiceConfigurationInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteDetnetServiceConfigurationOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteGateConfigToSouthInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteGateConfigToSouthOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteTsnServiceToSouthInput;
+import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.WriteTsnServiceToSouthOutput;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.links.PathLink;
 import org.opendaylight.yang.gen.v1.urn.detnet.pce.rev180911.links.PathLinkBuilder;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.manager.rev180830.BandwidthConfigManager;
@@ -55,10 +59,9 @@ import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.opendaylight.yangtools.yang.common.RpcResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-*/
 
 public class BandwidthServiceImplTest extends AbstractConcurrentDataBrokerTest {
-    /*
+
     private static final Logger LOG = LoggerFactory.getLogger(BandwidthServiceImplTest.class);
     private static final String TOPOLOGY_ID = "default-detnet-topology";
     private BandwidthServiceImpl bandwidthService;
@@ -185,33 +188,39 @@ public class BandwidthServiceImplTest extends AbstractConcurrentDataBrokerTest {
     private class DetnetDriverApiServiceMock implements DetnetDriverApiService {
 
         @Override
-        public Future<RpcResult<Void>> deleteDetnetServiceConfiguration(DeleteDetnetServiceConfigurationInput input) {
+        public ListenableFuture<RpcResult<DeleteDetnetServiceConfigurationOutput>> deleteDetnetServiceConfiguration(
+                DeleteDetnetServiceConfigurationInput input) {
             return null;
         }
 
         @Override
-        public Future<RpcResult<Void>> writeGateConfigToSouth(WriteGateConfigToSouthInput input) {
+        public ListenableFuture<RpcResult<WriteGateConfigToSouthOutput>> writeGateConfigToSouth(
+                WriteGateConfigToSouthInput input) {
             return null;
         }
 
         @Override
-        public Future<RpcResult<Void>> deleteTsnServiceToSouth(DeleteTsnServiceToSouthInput input) {
+        public ListenableFuture<RpcResult<DeleteTsnServiceToSouthOutput>> deleteTsnServiceToSouth(
+                DeleteTsnServiceToSouthInput input) {
             return null;
         }
 
         @Override
-        public Future<RpcResult<Void>> writeBandwidthToSouth(WriteBandwidthToSouthInput input) {
+        public ListenableFuture<RpcResult<WriteBandwidthToSouthOutput>> writeBandwidthToSouth(
+                WriteBandwidthToSouthInput input) {
             return RpcReturnUtil.returnSucess(null);
         }
 
         @Override
-        public Future<RpcResult<Void>> writeTsnServiceToSouth(WriteTsnServiceToSouthInput input) {
+        public ListenableFuture<RpcResult<WriteTsnServiceToSouthOutput>> writeTsnServiceToSouth(
+                WriteTsnServiceToSouthInput input) {
             return null;
         }
 
         @Override
-        public Future<RpcResult<Void>> writeDetnetServiceConfiguration(WriteDetnetServiceConfigurationInput input) {
+        public ListenableFuture<RpcResult<WriteDetnetServiceConfigurationOutput>> writeDetnetServiceConfiguration(
+                WriteDetnetServiceConfigurationInput input) {
             return null;
         }
-    }*/
+    }
 }

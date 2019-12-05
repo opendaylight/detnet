@@ -378,7 +378,7 @@ public class DetnetServiceDb {
 
     public String deleteDetnetServiceFromDB(Integer domainId, Long streamId, Services services) {
         //LOG.debug("deleteDetnetServiceFromDB");
-        StringBuffer errorMsg = new StringBuffer();
+        StringBuilder errorMsg = new StringBuilder();
         if (services != null && services.getServiceProxyInstances() != null) {
             for (ServiceProxyInstances proxyInstance : services.getServiceProxyInstances()) {
                 ListenableFuture<RpcResult<DeleteDetnetServiceConfigurationOutput>> rpcResult =

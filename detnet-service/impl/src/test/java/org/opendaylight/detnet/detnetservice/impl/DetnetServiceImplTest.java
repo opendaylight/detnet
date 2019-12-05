@@ -7,10 +7,12 @@
  */
 
 package org.opendaylight.detnet.detnetservice.impl;
-/*
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -20,9 +22,10 @@ import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opendaylight.controller.md.sal.binding.api.DataBroker;*/
+import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.binding.test.AbstractConcurrentDataBrokerTest;
-/*
+
+import org.opendaylight.detnet.common.util.RpcReturnUtil;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DetnetDriverApiService;
 
 import org.opendaylight.yang.gen.v1.urn.detnet.service.api.rev180904.CreateDetnetServiceInput;
@@ -37,9 +40,9 @@ import org.opendaylight.yang.gen.v1.urn.detnet.service.instance.rev180904.detnet
 import org.opendaylight.yang.gen.v1.urn.detnet.service.instance.rev180904.device.detnet.service.manager.Nodes;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.instance.rev180904.device.detnet.service.manager.nodes.DomainServiceKey;
 import org.opendaylight.yangtools.yang.common.RpcResult;
-*/
+
 public class DetnetServiceImplTest extends AbstractConcurrentDataBrokerTest {
-   /* private DataBroker dataBroker;
+    private DataBroker dataBroker;
     DetnetServiceImpl detnetServiceImpl;
     DetnetDriverApiService driverApiService = mock(DetnetDriverApiService.class);
 
@@ -76,7 +79,7 @@ public class DetnetServiceImplTest extends AbstractConcurrentDataBrokerTest {
 
     @Test
     public void createDetnetServiceTest1() throws InterruptedException, ExecutionException {
-        //when(driverApiService.writeDetnetServiceConfiguration(any())).thenReturn(RpcReturnUtil.returnSucess(null));
+        when(driverApiService.writeDetnetServiceConfiguration(any())).thenReturn(RpcReturnUtil.returnSucess(null));
         CreateDetnetServiceInput input = new CreateDetnetServiceInputBuilder()
                 .setDomainId(1)
                 .setStreamId(111L)
@@ -264,13 +267,13 @@ public class DetnetServiceImplTest extends AbstractConcurrentDataBrokerTest {
         deviceService = DetnetServiceDb.getInstance().getDeviceService();
         assertEquals(3,deviceService.getNodes().size());
         for (Nodes node : deviceService.getNodes()) {
-            assertTrue(node.getDomainService().isEmpty());
+            assertTrue(node.getDomainService() == null);
         }
 
         deleteInput = new DeleteDetnetServiceInputBuilder().setStreamId(1L).build();
         ListenableFuture<RpcResult<DeleteDetnetServiceOutput>> result2 =
                 detnetServiceImpl.deleteDetnetService(deleteInput);
-        assertTrue(!result.get().isSuccessful());
+        assertTrue(!result2.get().isSuccessful());
         assertEquals("input information error!",result2.get().getErrors().iterator().next().getMessage());
 
         deleteInput = new DeleteDetnetServiceInputBuilder().setDomainId(2).setStreamId(22L).build();
@@ -320,8 +323,6 @@ public class DetnetServiceImplTest extends AbstractConcurrentDataBrokerTest {
                 .setRelayNode(DetnetServiceMockUtils.buildRelayNodes())
                 .build();
         return detnetServiceImpl.createDetnetService(input);
-    }*/
+    }
 
 }
-
-

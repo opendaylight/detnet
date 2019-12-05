@@ -256,21 +256,23 @@ module detnet-common {
        }
      }
     grouping flow-type-group {
-     choice flow-type {
-        description
-          "Client flow type: layer 2 flow, layer 3
-           flow.";
-        case l2-flow-identfication {
-          description
-            "Ethernet flow identification.";
-          uses detnet-common:l2-flow-identification-at-uni;
-        }
-        case l3-flow-identification {
-          description
-            "layer 3 flow identification, including
-             IPv4,IPv6 and MPLS.";
-          uses detnet-common:l3-flow-identification-at-uni;
-        }
-      }
+    container client-flow-type {
+         choice flow-type {
+            description
+              "Client flow type: layer 2 flow, layer 3
+               flow.";
+            case l2-flow-identfication {
+              description
+                "Ethernet flow identification.";
+              uses detnet-common:l2-flow-identification-at-uni;
+            }
+            case l3-flow-identification {
+              description
+                "layer 3 flow identification, including
+                 IPv4,IPv6 and MPLS.";
+              uses detnet-common:l3-flow-identification-at-uni;
+            }
+          }
+         }
      }
 }

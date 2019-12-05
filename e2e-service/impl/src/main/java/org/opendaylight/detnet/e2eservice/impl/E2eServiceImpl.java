@@ -29,8 +29,8 @@ import org.opendaylight.yang.gen.v1.urn.detnet.bandwidth.api.rev180907.DeleteE2e
 import org.opendaylight.yang.gen.v1.urn.detnet.bandwidth.api.rev180907.DetnetBandwidthApiService;
 import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.DetnetEncapsulationType;
 import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.configure.result.ConfigureResult;
-import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.flow.type.group.flow.type.L2FlowIdentfication;
-import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.flow.type.group.flow.type.L3FlowIdentification;
+import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.flow.type.group.client.flow.type.flow.type.L2FlowIdentfication;
+import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.flow.type.group.client.flow.type.flow.type.L3FlowIdentification;
 import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.ip.flow.identification.IpFlowType;
 import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.ip.flow.identification.ip.flow.type.Ipv4;
 import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.ip.flow.identification.ip.flow.type.Ipv6;
@@ -144,7 +144,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
     public ListenableFuture<RpcResult<ConfigE2eServiceOutput>> configE2eService(ConfigE2eServiceInput input) {
         DataCheck.CheckResult checkResult;
         if (!(checkResult = DataCheck.checkNotNull(input, input.getTopologyId(), input.getDomainId(),
-                input.getStreamId(), input.getFlowType(), input.getInterval(),
+                input.getStreamId(), input.getClientFlowType().getFlowType(), input.getInterval(),
                 input.getMaxPacketsPerInterval(), input.getMaxPayloadSize(), input.getListeners(),
                 input.getSourceNode(), input.getSourceTp())).isInputIllegal()) {
             //LOG.info("Config e2e service input error:" + checkResult.getErrorCause());
@@ -371,8 +371,8 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
         InstanceIdentifier<MappingTemplates> mappingTemplatesIID = InstanceIdentifier
                 .create(PriorityTrafficClassMapping.class)
                 .child(MappingTemplates.class, new MappingTemplatesKey(templateName));
-        if (input.getFlowType() instanceof L2FlowIdentfication) {
-            L2FlowIdentfication l2NativeFlow = (L2FlowIdentfication) input.getFlowType();
+        if (input.getClientFlowType().getFlowType() instanceof L2FlowIdentfication) {
+            L2FlowIdentfication l2NativeFlow = (L2FlowIdentfication) input.getClientFlowType().getFlowType();
             priorityValue = l2NativeFlow.getPcp().longValue();
             InstanceIdentifier<Pri8021p> pri8021pIID = mappingTemplatesIID
                     .child(Pri8021ps.class)
@@ -382,8 +382,8 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
                 //LOG.info("Traffic class of e2e service: {}", pri8021p.getTrafficClass());
                 return pri8021p.getTrafficClass().shortValue();
             }
-        } else if (input.getFlowType() instanceof L3FlowIdentification) {
-            L3FlowIdentification l3NativeFlow = (L3FlowIdentification) input.getFlowType();
+        } else if (input.getClientFlowType().getFlowType() instanceof L3FlowIdentification) {
+            L3FlowIdentification l3NativeFlow = (L3FlowIdentification) input.getClientFlowType().getFlowType();
             IpFlowType ipFlowType = l3NativeFlow.getIpFlowType();
             if (ipFlowType instanceof Ipv4) {
                 Ipv4 ipv4NativeFlow = (Ipv4)ipFlowType;
@@ -747,7 +747,7 @@ public class E2eServiceImpl implements DetnetE2eServiceApiService {
         ClientFlow clientFlow = new ClientFlowBuilder()
                 .withKey(new ClientFlowKey(clientFlowId))
                 .setClientFlowId(clientFlowId)
-                .setFlowType(input.getFlowType())
+                .setClientFlowType(input.getClientFlowType())
                 .build();
         List<ClientFlow> clientFlowList = new ArrayList<ClientFlow>();
         clientFlowList.add(clientFlow);

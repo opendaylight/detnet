@@ -78,7 +78,7 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
             return RpcReturnUtil.returnErr("input information error!");
         }
         //LOG.info("CreateDetnetServiceInput:" + input);
-        StringBuffer resultMsg = new StringBuffer();
+        StringBuilder resultMsg = new StringBuilder();
         for (DetnetPath path : input.getDetnetPath()) {
             resultMsg.append(generateSegmentsAndServiceInstances(input.getDomainId().intValue(),
                     input.getStreamId().longValue(),
@@ -103,7 +103,7 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
         String segIngressNode;
         String segEgressNode;
         Integer linkNum;
-        StringBuffer resultMsg = new StringBuffer();
+        StringBuilder resultMsg = new StringBuilder();
         for (PathLink link : path.getPathLink()) {
             links.add(link);
             RelayNode relayNode = getRelayNodeUseLinkDest(link,relayNodes);
@@ -182,35 +182,35 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
         DetnetServiceResourceBuilder builder = new DetnetServiceResourceBuilder();
         switch (type) {
             case ProxyInstanceId:
-                if (serviceResource != null) {
+                if (serviceResource != null && serviceResource.getProxyInstanceId() != null) {
                     id = serviceResource.getProxyInstanceId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);
                 builder.setProxyInstanceId(id);
                 break;
             case MappingInstanceId:
-                if (serviceResource != null) {
+                if (serviceResource != null && serviceResource.getMappingInstanceId() != null) {
                     id = serviceResource.getMappingInstanceId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);
                 builder.setMappingInstanceId(id);
                 break;
             case ServiceInstanceId:
-                if (serviceResource != null) {
+                if (serviceResource != null && serviceResource.getServiceInstanceId() != null) {
                     id = serviceResource.getServiceInstanceId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);
                 builder.setServiceInstanceId(id);
                 break;
             case DetnetFlowId:
-                if (serviceResource != null) {
+                if (serviceResource != null && serviceResource.getDetnetFlowId() != null) {
                     id = serviceResource.getDetnetFlowId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);
                 builder.setDetnetFlowId(id);
                 break;
             case TransportTunnelId:
-                if (serviceResource != null) {
+                if (serviceResource != null && serviceResource.getTransportTunnelId() != null) {
                     id = serviceResource.getTransportTunnelId().longValue();
                 }
                 id = (id == null ? 1L : id + 1);

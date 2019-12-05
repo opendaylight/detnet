@@ -7,7 +7,6 @@
  */
 package org.opendaylight.detnet.driver.impl;
 
-/*
 import static org.junit.Assert.assertEquals;
 //import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -25,7 +24,8 @@ import org.junit.Test;
 import org.opendaylight.controller.md.sal.binding.test.AbstractConcurrentDataBrokerTest;
 import org.opendaylight.detnet.common.util.DataOperator;
 //import org.opendaylight.detnet.common.util.NodeDataBroker;
-import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.flow.type.group.flow.type.L3FlowIdentificationBuilder;
+import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.flow.type.group.ClientFlowTypeBuilder;
+import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.flow.type.group.client.flow.type.flow.type.L3FlowIdentificationBuilder;
 import org.opendaylight.yang.gen.v1.urn.detnet.common.rev180904.ip.flow.identification.ip.flow.type.Ipv4Builder;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteDetnetServiceConfigurationInput;
 import org.opendaylight.yang.gen.v1.urn.detnet.driver.api.rev181221.DeleteDetnetServiceConfigurationInputBuilder;
@@ -73,6 +73,8 @@ import org.opendaylight.yang.gen.v1.urn.detnet.service.manager.rev180830.bandwit
 import org.opendaylight.yang.gen.v1.urn.detnet.service.manager.rev180830.bandwith.manager.group.TrafficClassesKey;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.manager.rev180830.forwarding.item.list.group.ForwardingItemList;
 import org.opendaylight.yang.gen.v1.urn.detnet.service.manager.rev180830.forwarding.item.list.group.ForwardingItemListKey;
+import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.Ipv4Address;
+import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.PortNumber;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.opendaylight.yangtools.yang.common.RpcResult;
 import org.opendaylight.yangtools.yang.common.Uint32;
@@ -80,12 +82,8 @@ import org.opendaylight.yangtools.yang.common.Uint32;
 //import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-*/
-
-import org.opendaylight.controller.md.sal.binding.test.AbstractConcurrentDataBrokerTest;
 
 public class DetnetDriverServiceImplTest extends AbstractConcurrentDataBrokerTest {
-    /*
     private static final Logger LOG = LoggerFactory.getLogger(DetnetDriverServiceImplTest.class);
     private DriverServiceImpl driverService;
 
@@ -281,7 +279,8 @@ public class DetnetDriverServiceImplTest extends AbstractConcurrentDataBrokerTes
         List<ClientFlow> clientFlows = new ArrayList<ClientFlow>();
         clientFlows.add(new ClientFlowBuilder()
                 .setClientFlowId(111L)
-                .setFlowType(new L3FlowIdentificationBuilder()
+                .setClientFlowType(new ClientFlowTypeBuilder()
+                        .setFlowType(new L3FlowIdentificationBuilder()
                         .setIpFlowType(new Ipv4Builder()
                                 .setSrcIpv4Address(new Ipv4Address("1.1.1.1"))
                                 .setDestIpv4Address(new Ipv4Address("2.2.2.2"))
@@ -291,6 +290,8 @@ public class DetnetDriverServiceImplTest extends AbstractConcurrentDataBrokerTes
                         .setDestinationPort(new PortNumber(68))
                         .setProtocol((short) 15)
                         .build())
+                .build())
+
                 .setTrafficSpecification(new TrafficSpecificationBuilder()
                         .setInterval(1000L)
                         .setMaxPacketsPerInterval(8000L)
@@ -320,6 +321,6 @@ public class DetnetDriverServiceImplTest extends AbstractConcurrentDataBrokerTes
         return InstanceIdentifier.create(DetnetConfiguration.class)
                 .child(DetnetServiceConfiguration.class)
                 .child(Service.class,new ServiceKey(streamId));
-    }*/
+    }
 
 }
