@@ -30,13 +30,13 @@ import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 
 public class PcePathDb {
     private DataBroker dataBroker;
-    //private PcePathDb instance;
+    private static PcePathDb instance = new PcePathDb();
 
     public PcePathDb() {
     }
 
     public static PcePathDb getInstance() {
-        return new PcePathDb();
+        return instance;
     }
 
     public void pathDataWriteDbRoot() {
