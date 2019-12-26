@@ -24,37 +24,66 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     <packaging>feature</packaging>
     <name>OpenDaylight :: detnet :: bandwidth</name>
 
-    <properties>
-        <mdsal.version>1.11.0-SNAPSHOT</mdsal.version>
-        <restconf.version>1.11.0-SNAPSHOT</restconf.version>
-    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.opendaylight.mdsal</groupId>
+                <artifactId>mdsal-artifacts</artifactId>
+                <version>5.0.4</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.opendaylight.controller</groupId>
+                <artifactId>mdsal-artifacts</artifactId>
+                <version>1.11.0-SNAPSHOT</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.opendaylight.netconf</groupId>
+                <artifactId>netconf-artifacts</artifactId>
+                <version>1.8.0-SNAPSHOT</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.opendaylight.controller</groupId>
             <artifactId>odl-mdsal-broker</artifactId>
-            <version>${mdsal.version}</version>
             <type>xml</type>
             <classifier>features</classifier>
         </dependency>
         <dependency>
             <groupId>org.opendaylight.netconf</groupId>
             <artifactId>odl-restconf</artifactId>
-            <version>${restconf.version}</version>
             <type>xml</type>
             <classifier>features</classifier>
         </dependency>
         <dependency>
             <groupId>org.opendaylight.netconf</groupId>
             <artifactId>odl-mdsal-apidocs</artifactId>
-            <version>${restconf.version}</version>
             <type>xml</type>
             <classifier>features</classifier>
         </dependency>
         <dependency>
-            <groupId>org.opendaylight.mdsal</groupId>
-            <artifactId>odl-mdsal-binding-base</artifactId>
-            <version>5.0.4</version>
+            <groupId>org.opendaylight.netconf</groupId>
+            <artifactId>odl-netconf-mdsal</artifactId>
+            <type>xml</type>
+            <classifier>features</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.mdsal.model</groupId>
+            <artifactId>odl-mdsal-model-rfc7224</artifactId>
+            <type>xml</type>
+            <classifier>features</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.mdsal.model</groupId>
+            <artifactId>odl-mdsal-model-draft-clemm-netmod-yang-network-topo-01-minimal</artifactId>
             <type>xml</type>
             <classifier>features</classifier>
         </dependency>
@@ -68,41 +97,5 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
             <artifactId>bandwidth-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.opendaylight.aaa</groupId>
-            <artifactId>aaa-artifacts</artifactId>
-            <version>0.11.0-SNAPSHOT</version>
-            <scope>import</scope>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>org.opendaylight.aaa</groupId>
-            <artifactId>aaa-encrypt-service</artifactId>
-            <version>0.11.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opendaylight.aaa</groupId>
-            <artifactId>aaa-shiro</artifactId>
-            <version>0.11.0-SNAPSHOT</version>
-        </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.opendaylight.aaa</groupId>-->
-            <!--<artifactId>odl-aaa-encryption-service</artifactId>-->
-            <!--&lt;!&ndash; FIXME: version declaration should be coming from aaa-artifacts &ndash;&gt;-->
-            <!--<version>0.7.4-SNAPSHOT</version>-->
-            <!--<classifier>features</classifier>-->
-            <!--<type>xml</type>-->
-        <!--</dependency>-->
     </dependencies>
-    <!--dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.opendaylight.aaa</groupId>
-                <artifactId>aaa-artifacts</artifactId>
-                <version>0.7.4-SNAPSHOT</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-        </dependencies>
-    </dependencyManagement-->
 </project>
