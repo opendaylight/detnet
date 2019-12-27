@@ -33,6 +33,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
 	<module>odl-detnet-tsn</module>
     <module>odl-detnet-service</module>
 	<module>odl-detnet-e2e-service</module>
+    <module>odl-detnet-all</module>
 	<module>features-detnet</module>
   </modules>
 
