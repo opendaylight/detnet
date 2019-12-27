@@ -54,7 +54,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
         <dependency>
             <groupId>org.opendaylight.mdsal</groupId>
             <artifactId>mdsal-binding-api</artifactId>
-            <version>5.0.4</version>
+            <version>5.0.6</version>
         </dependency>
         <dependency>
             <groupId>org.opendaylight.detnet</groupId>
