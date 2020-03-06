@@ -67,7 +67,6 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
     public TopologyProvider(final DataBroker dataBroker, final RpcProviderRegistry rpcRegistry) {
         this.dataBroker = dataBroker;
         this.rpcRegistry = rpcRegistry;
-        //instance = this;
     }
 
 
@@ -92,7 +91,6 @@ public class TopologyProvider implements DetnetBandwidthApiListener {
         pceService = rpcRegistry.addRpcImplementation(PceApiService.class,pcePathImpl);
         pcePathImpl.writeDbRoot();
         setPcePathImpl(pcePathImpl);
-        //PathsRecordPerDomain.getInstance().setPcePathService(pcePathImpl);
     }
 
     public void close() {

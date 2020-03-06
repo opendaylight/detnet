@@ -14,7 +14,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     <parent>
         <groupId>org.opendaylight.odlparent</groupId>
         <artifactId>single-feature-parent</artifactId>
-        <version>6.0.3</version>
+        <version>6.0.4</version>
         <relativePath/>
     </parent>
 
@@ -54,7 +54,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
         <dependency>
             <groupId>org.opendaylight.mdsal</groupId>
             <artifactId>mdsal-binding-api</artifactId>
-            <version>5.0.5-SNAPSHOT</version>
+            <version>5.0.10-SNAPSHOT</version>
         </dependency>
 
         <dependency>
