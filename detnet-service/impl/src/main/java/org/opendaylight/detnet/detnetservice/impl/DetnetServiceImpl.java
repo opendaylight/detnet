@@ -116,7 +116,6 @@ public final class DetnetServiceImpl implements DetnetServiceApiService {
                 resultMsg.append(processRelayNodeInstance(domainId,streamId,sourceNode,segIngressNode,segEgressNode,
                         segmentPath,clientFlow,relayNode));
                 links.clear();
-                //links.add(link);
             }
         }
         List<PathLink> tempPath = new ArrayList<PathLink>(links);
