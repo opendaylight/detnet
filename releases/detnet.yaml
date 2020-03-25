@@ -1,0 +1,6 @@
+RIT_BRANCH = stable/magnesium
+VERSION = 0.1.0
+LOG_DIR = detnet-maven-stage-master/16/
+DISTRIBUTION_TYPE = maven
+USE_RELEASE_FILE = false
+DRY_RUN = false
