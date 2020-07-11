@@ -1,0 +1,48 @@
+---
+project: 'detnet'
+project_creation_date: '2018-12-13'
+project_category: ''
+lifecycle_state: 'Incubation'
+project_lead: &odl_detnet_ptl
+    name: 'Quan Xiong'
+    email: 'xiong.quan@zte.com.cn'
+    company: 'zte.com'
+    id: 'xiongquan'
+    timezone: 'Unknown/Unknown'
+primary_contact: *odl_detnet_ptl
+issue_tracking:
+    type: 'jira'
+    url: 'https://jira.opendaylight.org/projects/'
+    key: 'detnet'
+mailing_list:
+    type: 'groups.io'
+    url: 'app-dev@lists.opendaylight.org'
+    tag: '[]'
+realtime_discussion:
+    type: 'irc'
+    server: 'freenode.net'
+    channel: '#opendaylight'
+meetings:
+    - type: 'gotomeeting+irc'
+      agenda: 'https://wiki.opendaylight.org'
+      url: ''
+      server: 'freenode.net'
+      channel: '#opendaylight'
+      repeats: ''
+      time: ''
+repositories:
+    - detnet
+committers:
+    - <<: *odl_detnet_ptl
+    - name: 'Anil Belur'
+      email: 'abelur@linuxfoundation.org'
+      company: 'Linux Foundation'
+      id: 'askb'
+      timezone: 'Unknown/Unknown'
+tsc:
+    # yamllint disable rule:line-length
+    approval: 'https://meetings.opendaylight.org/opendaylight-meeting/2018/tsc/opendaylight-meeting-tsc.2018-12-13-17.00.log.html#l-78'
+    changes:
+        - type: ''
+          name: ''
+          link: ''
